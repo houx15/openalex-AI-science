@@ -116,7 +116,7 @@ def main(panel_csv, authors_csv, out_csv, reps=3):
     mde_log = 2.8 * full_mid.se_w.mean()
     hits = []
     for r in range(int(reps) * 3):
-        res = fit(p, draw_types(a, *SCENARIOS[1][1:]), effect_w=mde_log, rng=rng)
+        res = fit(p, draw_types(a, *SCENARIOS[1][1:], rng), effect_w=mde_log, rng=rng)
         hits.append(abs(res["b_w"] / res["se_w"]) > 1.96)
     print(f"injected W effect {np.exp(mde_log) - 1:.3%}: rejection rate {np.mean(hits):.2f} over {len(hits)} runs")
     out["check_injected_effect"] = np.exp(mde_log) - 1
@@ -131,4 +131,4 @@ def main(panel_csv, authors_csv, out_csv, reps=3):
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:4])
+    main(*sys.argv[1:5])
