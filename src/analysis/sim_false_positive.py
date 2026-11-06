@@ -25,8 +25,11 @@ Exposure rules:
 
 Output: mean coefficient, mean clustered SE, and the share of runs rejecting at 5%, per cell.
 
+Extra specs: baseline_bin_fe adds 2012-2015 output quintile x half-year fixed effects; and
+baseline_and_trend_bin_fe also adds pre-growth tercile x half-year (pre-period data only).
+
 Usage:
-    python -m src.analysis.sim_false_positive PAPERS_CSV COUNTS_CSV OUT_CSV [AUTHORS] [REPS]
+    python -m src.analysis.sim_false_positive PAPERS_CSV COUNTS_CSV OUT_CSV [AUTHORS] [REPS] [ONLY_SPECS]
 """
 
 import sys
@@ -84,6 +87,11 @@ def load(papers_csv, counts_csv, n_authors):
     z["S4_low_baseline"] = -np.log1p(out_base.reindex(a.index, fill_value=0))
     z = (z - z.mean()) / z.std()
     z["S0_random"] = 0.0
+    # pre-period control bins (SPEC §7 robustness): baseline output quintile, pre-growth tercile
+    bb = pd.qcut(z.S4_low_baseline.rank(method="first"), 5, labels=False).astype(str)
+    tb = pd.qcut(z.S1_output_trend.rank(method="first"), 3, labels=False).astype(str)
+    p["bbh"] = p.author_id.map(bb) + "|" + p.half.astype(str)
+    p["tbh"] = p.author_id.map(tb) + "|" + p.half.astype(str)
     return authors, pp, p, z
 
 
@@ -108,11 +116,11 @@ def coef(m, name):
     return b, se
 
 
-def fit_r1(p, t, exclusion=True, volume=True, post_end=2020 * 2, by_ni=False):
+def fit_r1(p, t, exclusion=True, volume=True, post_end=2020 * 2, by_ni=False, extra_fe=""):
     d = add_period_fe(p[(p.half <= PRE_END) | ((p.half >= POST_START) & (p.half <= post_end))].merge(t, on="author_id"))
     d["post"] = (d.half >= POST_START).astype(int)
     d["y"] = np.where((d.post == 1) & exclusion, d.n_excl, d.n_all)
-    fe = f"author_id + {PERIOD_FE}" + (" + eh" if volume else "")
+    fe = f"author_id + {PERIOD_FE}" + (" + eh" if volume else "") + extra_fe
     if by_ni:
         terms = []
         for k in (1, 2, 3):
@@ -155,7 +163,7 @@ def fit_r3(p, f):
     return {"b_W": b, "se_W": se}
 
 
-def main(papers_csv, counts_csv, out_csv, n_authors=50_000, reps=6):
+def main(papers_csv, counts_csv, out_csv, n_authors=50_000, reps=6, only_spec=None):
     rng = np.random.default_rng(SEED)
     authors, pp, p, z = load(papers_csv, counts_csv, int(n_authors))
     print(f"{len(authors):,} authors, {len(pp):,} author-paper rows, {len(p):,} panel rows", flush=True)
@@ -165,7 +173,10 @@ def main(papers_csv, counts_csv, out_csv, n_authors=50_000, reps=6):
                   ("R2_monthly_first", s, "main"), ("R3_rolling", s, "main")]
     for s in ("S0_random", "S1_output_trend", "S4_low_baseline"):
         cells += [("R1_fixed_window", s, "no_exclusion"), ("R1_fixed_window", s, "no_volume_fe"),
-                  ("R1_fixed_window", s, "post_without_2020H1")]
+                  ("R1_fixed_window", s, "post_without_2020H1"), ("R1_fixed_window", s, "baseline_bin_fe"),
+                  ("R1_fixed_window", s, "baseline_and_trend_bin_fe")]
+    if only_spec:
+        cells = [c for c in cells if c[2] in only_spec.split(",")]
     rows = []
     for rule, s, spec in cells:
         for r in range(int(reps)):
@@ -174,7 +185,9 @@ def main(papers_csv, counts_csv, out_csv, n_authors=50_000, reps=6):
             if rule == "R1_fixed_window":
                 t = types_fixed_window(f)
                 kw = {"main": {}, "by_n_i": {"by_ni": True}, "no_exclusion": {"exclusion": False},
-                      "no_volume_fe": {"volume": False}, "post_without_2020H1": {"post_end": 2019 * 2 + 1}}[spec]
+                      "no_volume_fe": {"volume": False}, "post_without_2020H1": {"post_end": 2019 * 2 + 1},
+                      "baseline_bin_fe": {"extra_fe": " + bbh"},
+                      "baseline_and_trend_bin_fe": {"extra_fe": " + bbh + tbh"}}[spec]
                 res = fit_r1(p, t, **kw)
                 res["share_W"], res["share_WI"] = t.W.mean(), t.WI.mean()
             elif rule == "R2_monthly_first":
@@ -202,4 +215,4 @@ def main(papers_csv, counts_csv, out_csv, n_authors=50_000, reps=6):
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:6])
+    main(*sys.argv[1:7])
