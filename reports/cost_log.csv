@@ -8,3 +8,9 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-06,c3ed5a68-4d1b-4c5e-bffd-b1f6d76bcdd9 + bb412a8b-5246-43d6-9c58-84bac725e3b4,QC row counts on derived tables,(inline),5000000000,4263359021,0.025,0.021
 2026-11-06,e6be2ac4-3a8e-4c95-bf03-aaba26f83ade + 387db3de-1705-4f7a-b099-609a28e1db28,QC 2026 excess by type/month/source (aggregate only),(inline),500000000,185686245,0.003,0.001
 2026-11-06,9d7e4ba7-2858-452d-a5d5-d419a1506a61,QC arxiv_versions table,sql/raw_arxiv_versions.sql,20000000,17823614,0.0001,0.0001
+2026-11-06,aa561de7-012d-4936-9ce9-e4f33acd776d + a5f33f04 + 017b20be,crosswalk prep lookups (arXiv source id; DOI formats),(inline),3000000000,2294980270,0.015,0.011
+2026-11-06,dfed0839-7e35-47da-836c-faaa77e9d596,CTAS paper_family_r20261106a,sql/ctas_paper_family.sql,20000000000,14350000000,0.10,0.072
+2026-11-06,f314488f + bdcd0db3 + 58ce38c5 + cb7eb738 + 8560b725,crosswalk QC (match rates; families; collisions; types),(inline),500000000,282584633,0.003,0.001
+2026-11-06,43a1881e-073d-4e3b-b53f-93b53329ba52,crosswalk precision audit sample (400 links; titles),(inline),6000000000,4650521147,0.03,0.023
+2026-11-06,c7ede68a + 9a822677,crosswalk flags QC + early-published examples,(inline),12000000000,11020084438,0.06,0.055
+2026-11-06,1f200ff3-a98f-45b7-a1e0-4d915b24f9e3,CTAS paper_family_r20261106b (adds link_flag),sql/ctas_paper_family.sql,15000000000,14351075550,0.075,0.072
