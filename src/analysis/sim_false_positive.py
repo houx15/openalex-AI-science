@@ -16,7 +16,7 @@ papers, 0.02 otherwise), logit shift gamma = 0.5 per SD of:
 
 Exposure rules:
   R1 fixed_window   types from up to k = 3 fixed-seed selected papers, share >= 0.5 (main design);
-                    PPML on pre + post with type x post | author + field x career x half
+                    PPML on pre + post with type x post | author + field x half + career x half
                     [+ exposure bin x half]
   R2 monthly_first  staggered: treated from the half-year of the first flagged paper (all eligible
                     exposure papers), all half-years 2012H1-2020H1
@@ -36,7 +36,7 @@ import numpy as np
 import pandas as pd
 import pyfixest as pf
 
-from src.analysis.fe_groups import add_fch
+from src.analysis.fe_groups import PERIOD_FE, add_period_fe
 
 SEED = 20261106
 SELECT_SEED = "20261105"
@@ -69,7 +69,6 @@ def load(papers_csv, counts_csv, n_authors):
     age = p.half // 2 - p.first_year
     p["career"] = pd.cut(age, [-np.inf, 5, 10, 20, np.inf], labels=["0-5", "6-10", "11-20", "21+"]).astype(str)
     p["exp_bin"] = pd.cut(p.n_exp, [0, 1, 2, 3, 5, np.inf], labels=False).astype(str)
-    p["fch"] = p.field + "|" + p.career + "|" + p.half.astype(str)
     p["eh"] = p.exp_bin + "|" + p.half.astype(str)
 
     # author covariates for propensity scenarios (pre-period only)
@@ -110,10 +109,10 @@ def coef(m, name):
 
 
 def fit_r1(p, t, exclusion=True, volume=True, post_end=2020 * 2, by_ni=False):
-    d = add_fch(p[(p.half <= PRE_END) | ((p.half >= POST_START) & (p.half <= post_end))].merge(t, on="author_id"))
+    d = add_period_fe(p[(p.half <= PRE_END) | ((p.half >= POST_START) & (p.half <= post_end))].merge(t, on="author_id"))
     d["post"] = (d.half >= POST_START).astype(int)
     d["y"] = np.where((d.post == 1) & exclusion, d.n_excl, d.n_all)
-    fe = "author_id + fch" + (" + eh" if volume else "")
+    fe = f"author_id + {PERIOD_FE}" + (" + eh" if volume else "")
     if by_ni:
         terms = []
         for k in (1, 2, 3):
@@ -136,9 +135,9 @@ def fit_r1(p, t, exclusion=True, volume=True, post_end=2020 * 2, by_ni=False):
 
 def fit_r2(p, f):
     first = f[f.w].groupby("author_id").v1_half.min().rename("detect_half")
-    d = add_fch(p.merge(first, on="author_id", how="left"))
+    d = add_period_fe(p.merge(first, on="author_id", how="left"))
     d["D"] = (d.half >= d.detect_half).fillna(False).astype(int)
-    m = pf.fepois("n_all ~ D | author_id + fch + eh", data=d, vcov={"CRV1": "author_id"}, **FIT_KW)
+    m = pf.fepois(f"n_all ~ D | author_id + {PERIOD_FE} + eh", data=d, vcov={"CRV1": "author_id"}, **FIT_KW)
     b, se = coef(m, "D")
     return {"b_W": b, "se_W": se}
 
@@ -150,8 +149,8 @@ def fit_r3(p, f):
         s = g[g.v1_half <= h - 1].groupby("author_id").agg(nw=("nw", "sum"), n=("n", "sum"))  # lagged one half-year
         rows.append(pd.DataFrame({"author_id": s.index, "half": h, "X": (s.nw / s.n).to_numpy()}))
     x = pd.concat(rows)
-    d = add_fch(p.merge(x, on=["author_id", "half"], how="left").fillna({"X": 0.0}))
-    m = pf.fepois("n_all ~ X | author_id + fch + eh", data=d, vcov={"CRV1": "author_id"}, **FIT_KW)
+    d = add_period_fe(p.merge(x, on=["author_id", "half"], how="left").fillna({"X": 0.0}))
+    m = pf.fepois(f"n_all ~ X | author_id + {PERIOD_FE} + eh", data=d, vcov={"CRV1": "author_id"}, **FIT_KW)
     b, se = coef(m, "X")
     return {"b_W": b, "se_W": se}
 

@@ -11,7 +11,8 @@ writing-flagged with probability p_w and idea-flagged with probability p_i (high
 writing-flagged papers), and an author has a signal when the flagged share is >= 0.5 (SPEC §8).
 The model is SPEC §9's PPML:
 
-    n_it ~ W x post + WI x post + I x post | author + field x career bin x half + exposure bin x half
+    n_it ~ W x post + WI x post + I x post | author + field x half + career bin x half + exposure bin x half
+    (additive period effects; see src/analysis/fe_groups.py)
 
 (exposure bin = 1, 2, 3, 4-5, 6+ eligible exposure papers; it absorbs n_i x period). Standard
 errors are clustered by author. MDE at 80% power, two-sided 5%: exp(2.8 * SE) - 1. A check run
@@ -29,7 +30,7 @@ import numpy as np
 import pandas as pd
 import pyfixest as pf
 
-from src.analysis.fe_groups import add_fch
+from src.analysis.fe_groups import PERIOD_FE, add_period_fe
 
 SEED = 20261106
 HALVES = list(range(2018 * 2, 2022 * 2 + 2))  # 2018H1 .. 2022H2
@@ -56,7 +57,6 @@ def build_panel(panel_csv, authors_csv):
     p["career"] = pd.cut(age, [-np.inf, 5, 10, 20, np.inf], labels=["0-5", "6-10", "11-20", "21+"]).astype(str)
     p = p[p.half != GAP].copy()
     p["post"] = (p.half >= POST_START).astype(int)
-    p["fch"] = p.field + "|" + p.career + "|" + p.half.astype(str)
     p["eh"] = p.exp_bin.astype(str) + "|" + p.half.astype(str)
     return a, p
 
@@ -72,13 +72,13 @@ def draw_types(a, p_w, p_i_w, p_i_nw, rng):
 
 
 def fit(p, types, effect_w=0.0, rng=None):
-    d = add_fch(p.merge(types, on="author_id"))
+    d = add_period_fe(p.merge(types, on="author_id"))
     if effect_w:
         lift = (d.W == 1) & (d.post == 1)
         d.loc[lift, "n"] = d.loc[lift, "n"] + rng.poisson((np.exp(effect_w) - 1) * d.loc[lift, "n"])
     for t in ("W", "WI", "I"):
         d[f"{t}_post"] = d[t] * d.post
-    m = pf.fepois("n ~ W_post + WI_post + I_post | author_id + fch + eh", data=d,
+    m = pf.fepois(f"n ~ W_post + WI_post + I_post | author_id + {PERIOD_FE} + eh", data=d,
                   vcov={"CRV1": "author_id"})
     b, v = m.coef(), m._vcov
     names = list(b.index)
