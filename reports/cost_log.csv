@@ -7,3 +7,4 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-06,b54b1175-f1ee-4da8-8046-abc1a49ea6fb,CTAS authorship_long_r20261106a,sql/ctas_authorship_long.sql,108000000000,112040000000,0.54,0.56
 2026-11-06,c3ed5a68-4d1b-4c5e-bffd-b1f6d76bcdd9 + bb412a8b-5246-43d6-9c58-84bac725e3b4,QC row counts on derived tables,(inline),5000000000,4263359021,0.025,0.021
 2026-11-06,e6be2ac4-3a8e-4c95-bf03-aaba26f83ade + 387db3de-1705-4f7a-b099-609a28e1db28,QC 2026 excess by type/month/source (aggregate only),(inline),500000000,185686245,0.003,0.001
+2026-11-06,9d7e4ba7-2858-452d-a5d5-d419a1506a61,QC arxiv_versions table,sql/raw_arxiv_versions.sql,20000000,17823614,0.0001,0.0001
