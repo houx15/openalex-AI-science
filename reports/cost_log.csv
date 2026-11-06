@@ -22,3 +22,6 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-06,7d6c457a-fedc-4399-a2e0-549f44c2b4dc,author-bridge ID-based candidates,sql/audit_author_bridge_fragments.sql,20000000000,15609184806,0.10,0.078
 2026-11-06,11f69ec4-1480-4f26-8cb9-4e461b3cc287 + 3fba573e-70fb-49b7-91b2-039a724c4164,no-authorship diagnosis (xpac-only records),(inline),1000000000,663444296,0.005,0.003
 2026-11-06,f0a1d4df-0f30-497c-909c-937543e6a637,CTAS authorship_long_r20261106b (keeps xpac with flag),sql/ctas_authorship_long.sql,112000000000,112118455953,0.56,0.56
+2026-11-06,5fb8fbad-3c23-499f-a944-16a6c291f368,exact-title candidates for unlinked published versions,sql/audit_title_match_unlinked.sql,,23277235131,,0.116
+2026-11-06,69909611-5787-48f6-b301-26ab9e83481e,exact-title recall on known published versions,sql/audit_title_match_recall.sql,,10908750508,,0.055
+2026-11-06,02b814ac-5d52-4288-a385-eb1141089389,unpublished/published denominators by v1 year x field,(inline),,43704361,,0.0002

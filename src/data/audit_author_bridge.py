@@ -20,11 +20,20 @@ import pandas as pd
 
 PAREN = re.compile(r"\([^)]*\)")
 SPLIT = re.compile(r",|\band\b|;")
+LATEX_ACCENT = re.compile(r"\\[`'^\"~=.uvHckrbdt]\s*\{?\\?([A-Za-z])\}?")
+LATEX_LETTER = re.compile(r"\\(ss|ae|oe|aa|o|l|i|j)\b\s*\{?\}?", re.IGNORECASE)
+
+
+def delatex(s):
+    """Fold arXiv LaTeX accents to plain letters: Kov\\'a\\v{c} -> Kovac, \\o -> o."""
+    s = LATEX_ACCENT.sub(r"\1", s)
+    s = LATEX_LETTER.sub(r"\1", s)
+    return s.replace("{", "").replace("}", "")
 
 
 def name_key(name):
     """(last name, first name or initial) with accents, punctuation and case removed; None if unusable."""
-    s = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode().lower()
+    s = unicodedata.normalize("NFKD", delatex(name)).encode("ascii", "ignore").decode().lower()
     s = re.sub(r"['’`]", "", s)
     tokens = re.sub(r"[^a-z\s-]", " ", s).split()
     if len(tokens) < 2:

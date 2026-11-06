@@ -158,10 +158,38 @@ Reading:
 
 **Real asymmetry found and fixed:** 4,784 unpublished 2023–24 arXiv papers (2.6%; 0 published) exist in OpenAlex only as xpac records. The first `authorship_long` dropped xpac works, so these papers could never count toward an author. `authorship_long_r20261106b` keeps xpac rows with an `is_xpac` flag. Formal-output and career-age rules still exclude xpac; exposure linkage now includes it.
 
+## 6. Unlinked published versions (exact-title match)
+
+Question: how many 2023–24 arXiv papers that look unpublished (no published work in their `paper_family`) actually have a published version in OpenAlex that arXiv-ID and DOI matching missed?
+
+Method (`sql/audit_title_match_unlinked.sql`, `src/data/audit_title_match.py`):
+- Candidates are OpenAlex works published 2022–2026 (not arXiv-hosted; not dataset or peer-review) with the **same normalized title**: lowercase, accents folded, only `[a-z0-9]` kept, ≥25 characters. Works already in the family are excluded.
+- A pair is **author-confirmed** when at least one arXiv author name is compatible with an OpenAlex author name.
+- A confirmed pair counts as a **publication** when the work is a formal-output type (article, conference paper, book chapter, review, letter, book), is not xpac or paratext, and has a published journal/conference location or a journal/conference/book-series primary source.
+
+| v1 year | Field group | Looks unpublished | With an exact-title, author-confirmed publication | Share |
+|---|---|---|---|---|
+| 2023 | cs/math/stat/eess | 60,368 | 7,582 | 12.6% |
+| 2023 | other | 20,039 | 4,130 | 20.6% |
+| 2024 | cs/math/stat/eess | 81,270 | 8,424 | 10.4% |
+| 2024 | other | 23,777 | 4,756 | 20.0% |
+| **Total** | | **185,454** | **24,892** | **13.4%** |
+
+- **Precision.** In a random sample of 40 confirmed papers, all 40 were the same paper with the same authors in a real journal or conference (95% CI lower bound ≈ 91%). Median time from v1 to publication was 149 days, and 5% were published more than 167 days before v1.
+- **Rejected pairs are mostly true matches.** Of the 641 pairs that failed the author check, most are true matches with name-order differences ("Lee Zheng Han" vs "Zheng Han Lee") or collaboration authors. A further 342 have no OpenAlex authors. The confirmed count is therefore conservative.
+- **Bug fixed during this audit.** The shared name parser did not decode LaTeX accents in arXiv author strings (`Kov\'a\v{c}`). This wrongly rejected about 300 true matches. The fix is in `delatex` and has a test. It does not affect §5, whose final method compares OpenAlex names with OpenAlex names.
+- **Recall of exact titles is only about 49%** (`sql/audit_title_match_recall.sql`). Among 2023–24 arXiv papers already linked to a separate published record, only 3,877 of 7,881 (49%) share the arXiv title exactly; titles often change at publication. A rough recall adjustment puts the true unlinked share at **13–27% of "unpublished" papers**. That is an extrapolation, because the linked pairs may differ from the unlinked ones.
+- **Why linking fails.** Almost none of the matched works carry an arXiv ID (55) or are linked to another arXiv paper (65). The published record simply never mentions the preprint, and the arXiv record does not list the journal DOI.
+
+Implications:
+1. **Outcome contamination.** SPEC excludes an author's exposure-window papers from the outcome counts. With ID and DOI links alone, at least 25k published versions of 2023–24 arXiv papers would count as *new* formal outputs. That inflates outcomes for exactly the authors who posted during exposure, and could correlate with signals. **The production crosswalk needs a title + author fallback** (exact title, then fuzzy title with author and date checks), plus a measured residual.
+2. **§4 published/unpublished comparisons.** At least 13% of the "unpublished" group is in fact published. The §4 gaps are therefore attenuated and should be re-run after the fallback. Directions are unlikely to change.
+3. **Published share (lower bound) rises** from 61.6% to 67.2% for v1 2023, and from 56.9% to 62.3% for v1 2024.
+
 ## Open items
 
 1. **PI decision (exposure eligibility).** About 0.9% of 2023–24 arXiv papers are versions of papers published years earlier, e.g. a 2017 IEEE article first posted to arXiv in 2024. SPEC §6 defines exposure by v1 date alone, so these would be scored as 2023–24 text. **Proposed:** exclude papers whose family has a formal publication dated before 2022 from exposure scoring. Not applied.
-2. **Unlinked published versions.** Run a conservative title + author + date match for 2023–24 arXiv papers that have no published work, to estimate how many published versions are missed. This matters for the rule excluding exposure-window papers from outcomes.
+2. **Unlinked published versions (§6).** Add a title + author fallback to `paper_family`: exact title first, then fuzzy title with author and date checks. Measure the residual, then re-run the §4 comparisons.
 3. Resolve the 93 duplicate arXiv IDs and the ~1,500 works linked to several arXiv papers.
 4. Sample check of v1 dates against OAI-PMH once the endpoint works.
 5. Remaining audit sections: conference and book-chapter classification, preprint handling, 2026H1 completeness, author-ID quality, indexing delay, `has_content` coverage.

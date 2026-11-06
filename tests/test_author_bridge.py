@@ -30,3 +30,11 @@ def test_confirm_needs_strong_coauthor_evidence():
     assert confirm([("wang", "y"), ("li", "jun")], own, co) == (True, 1, 1)
     assert confirm([("wang", "yi"), ("chen", "bo")], own, co) == (True, 0, 1)
     assert confirm([("zhao", "q"), ("li", "jun")], own, co) == (False, 0, 0)
+
+
+def test_name_key_folds_latex_accents():
+    assert name_key(r"J. Kov\'a\v{c}") == ("kovac", "j")
+    assert name_key(r"Jen\H{o} Lehel") == ("lehel", "jeno")
+    assert name_key(r"Matija Tapu\v{s}kovi\'c") == name_key("Matija Tapušković")
+    assert name_key(r"Peter B\"uhlmann") == ("buhlmann", "peter")
+    assert name_key(r"S\o ren Hansen") == ("hansen", "soren")
