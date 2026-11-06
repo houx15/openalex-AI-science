@@ -36,3 +36,5 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-06,e419371c-e656-4721-adee-386e67647250 + 52f6540c-b7b7-4b64-a701-f4d6c98c6a5a,register paper_family_fallback; check,sql/raw_paper_family_fallback.sql,,433978,,0.0001
 2026-11-06,cad4df77-e201-4ea7-bcd9-f8c2dafbe685,panel volume (totals only),sql/panel_volume.sql,,4816216040,,0.024
 2026-11-06,119d4f04-fcc6-49fb-8dd2-cc123c6d04f0,funnel by field and career age,(inline),,43924002,,0.0002
+2026-11-06,ca9cd361-f8bb-46ad-afd3-44d5c1670787,pseudo-timeline (2017-18) funnel size,sql/funnel_pseudo_timeline.sql,,11160843145,,0.056
+2026-11-06,(s3 GetObject requester-pays),arXiv src+pdf bulk manifests (11.3 MB),(none),,11339173,,0.001
