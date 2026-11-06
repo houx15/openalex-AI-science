@@ -17,3 +17,8 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-06,c5dde0a6-0dc3-47b5-b53c-b3f3fc18f872,selection check: author-ID/ORCID coverage by publication status (2023-24 arXiv),(inline),5000000000,2686155165,0.025,0.013
 2026-11-06,23578217-5b68-4e5d-b131-75e715b0f178,selection check: share of authorships on established (>=4 baseline) profiles,(inline),5000000000,2436926440,0.025,0.012
 2026-11-06,dd0c6711-4e8a-45e8-b414-78d128fb8949,selection check: same split by ORCID,(inline),5000000000,3399460135,0.025,0.017
+2026-11-06,1083e705-2a4b-4397-a012-db8d56f9ba05,author-bridge sample (400 authors; names; pre-2023 coauthors),sql/audit_author_bridge_sample.sql,20000000000,16127727905,0.10,0.081
+2026-11-06,eb2f4469-c17e-4d3c-841b-5b200cbc5ea2,published status per 2023-24 arXiv paper,(inline),100000000,41101518,0.001,0.0002
+2026-11-06,7d6c457a-fedc-4399-a2e0-549f44c2b4dc,author-bridge ID-based candidates,sql/audit_author_bridge_fragments.sql,20000000000,15609184806,0.10,0.078
+2026-11-06,11f69ec4-1480-4f26-8cb9-4e461b3cc287 + 3fba573e-70fb-49b7-91b2-039a724c4164,no-authorship diagnosis (xpac-only records),(inline),1000000000,663444296,0.005,0.003
+2026-11-06,f0a1d4df-0f30-497c-909c-937543e6a637,CTAS authorship_long_r20261106b (keeps xpac with flag),sql/ctas_authorship_long.sql,112000000000,112118455953,0.56,0.56

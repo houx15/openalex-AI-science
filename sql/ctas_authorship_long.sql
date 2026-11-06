@@ -1,7 +1,9 @@
 -- Phase 0 subset: authorship_long (SPEC §10 Phase 0 task 4). One row per (work, author).
--- Non-xpac works, ALL years, so author_first_year (career age) can be derived from this table
--- without a second scan of authorships. Interpretation: career age counts non-xpac works only
--- (logged in docs/DECISIONS.md for PI review).
+-- ALL works including xpac (flagged), ALL years, so author_first_year (career age) can be derived
+-- from this table without a second scan of authorships. xpac rows are kept because 2.6% of
+-- unpublished 2023-24 arXiv papers exist in OpenAlex only as xpac records (author-bridge audit,
+-- 2026-11-06); formal-output and career-age rules filter on is_xpac (career age: non-xpac only,
+-- logged in docs/DECISIONS.md for PI review).
 CREATE TABLE authorship_long_${RUN_ID}
 WITH (
   format = 'PARQUET',
@@ -13,6 +15,7 @@ SELECT
   w.publication_date,
   w.publication_year,
   w.type,
+  w.is_xpac,
   a.author.id                            AS author_id,
   a.author.orcid                         AS orcid,
   a.author_position,
@@ -25,4 +28,3 @@ SELECT
        ELSE CAST(w.publication_year AS varchar) END AS publication_year_bin
 FROM works w
 CROSS JOIN UNNEST(w.authorships) AS t(a)
-WHERE NOT w.is_xpac

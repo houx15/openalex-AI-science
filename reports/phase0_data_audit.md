@@ -8,9 +8,9 @@ Status: **in progress**. Sections are added as each check finishes.
 |---|---|
 | OpenAlex snapshot | 2026-10-14 public release (`manifest.json` and `RELEASE_NOTES.txt` checked 2026-11-05) |
 | arXiv metadata | Kaggle `Cornell-University/arxiv`, dataset version 21506946, snapshot file dated 2026-11-01, sha256 `dcaa0325…5795` |
-| Derived tables | `works_core_r20261106a`, `authorship_long_r20261106a`, `paper_family_r20261106b` (Glue database `openalex_2026_10`) |
+| Derived tables | `works_core_r20261106a`, `authorship_long_r20261106b` (supersedes `…a`), `paper_family_r20261106b` (Glue database `openalex_2026_10`) |
 | SQL | `sql/ctas_works_core.sql`, `sql/ctas_authorship_long.sql`, `sql/ctas_paper_family.sql` |
-| AWS cost to date | $1.53 (`reports/cost_log.csv`) |
+| AWS cost to date | $2.26 (`reports/cost_log.csv`) |
 
 ## 1. Snapshot reconciliation
 
@@ -126,12 +126,37 @@ Share of (paper, author) pairs whose author has ≥4 article/conference works in
 Reading:
 - In cs/math/stat/eess, the gap disappears within ORCID strata. It comes from unpublished papers having more non-ORCID authorships (21% vs 13% of pairs), and non-ORCID authorships rarely sit on established profiles (about 17% vs 72%). That fits author-profile fragmentation when no ORCID is present, though genuinely new authors are also more common without ORCID. The two can't be separated yet.
 - In other fields a gap remains even with ORCID. Large physics collaborations, which are mostly published and mostly established authors, likely contribute. Repeat with the ≤50-author scoring rule before drawing conclusions.
-- 4.7% of unpublished 2023–24 papers have no authors in OpenAlex and can never enter an author's exposure set.
+- ~~4.7% of unpublished 2023–24 papers have no authors in OpenAlex.~~ **Corrected (§5):** this was an artifact of the first `authorship_long`, which dropped xpac works. 4,784 unpublished papers (2.6%, against 0 published) exist in OpenAlex only as xpac records. `authorship_long` is now rebuilt with xpac rows flagged.
 
 Implications to carry into the design (for the Phase 0 gate):
 1. Exposure eligibility (research paper vs review/position/note) must use arXiv-side information applied the same way to all papers, not OpenAlex `type`.
 2. An author's exposure papers come from OpenAlex attribution, which is less complete for unpublished papers, especially without ORCID. Signal types could then be computed from a published-skewed set of papers. Planned checks: ORCID-only robustness (already in SPEC §9), a published-vs-unpublished split of signal prevalence at the Phase 1 pilot, and an estimate of how many unpublished papers by sampled authors are missing from their profiles (name + coauthor matching on a sample).
 3. The proposed pre-2022 exposure exclusion conditions on publication. Treat it as a robustness check, not the main rule, unless the PI prefers otherwise.
+
+## 5. Author bridge: are unpublished arXiv papers attributed to the right author profile?
+
+Sample: 400 authors drawn with a fixed seed (`sql/audit_author_bridge_sample.sql`). Each has ≥4 article/conference works in 2018–2021 and ≥1 2023–24 arXiv paper attributed in OpenAlex. 100 per stratum of profile ORCID (yes/no) × majority arXiv archive in cs/math/stat/eess (yes/no).
+
+**Attempt 1 (rejected): name matching against arXiv author lists.** A paper counted as the author's when it listed the author's name and a 2018–2022 coauthor's name. This produced up to 960 papers per author (large collaborations, common names), so attribution rates were dominated by false matches. Not used.
+
+**Attempt 2: OpenAlex coauthor IDs** (`sql/audit_author_bridge_fragments.sql`, `src/data/audit_author_bridge.py`). Candidate papers are 2023–24 arXiv papers containing one of the author's 2018–2022 coauthor *IDs* (works with ≤50 authors) and an authorship whose name is compatible with the author's (last name equal; first names equal, or one is an initial of the other). A candidate counts as attributed when that authorship carries the sampled author's ID.
+
+| | Unpublished | Published |
+|---|---|---|
+| Candidate (author, paper) pairs | 374 | 1,403 |
+| Attributed, pair-weighted | 84.5% | 81.0% |
+| Attributed, author-weighted (152 / 184 authors) | 88.8% | 85.7% |
+| Within-author, 84 authors with both kinds | 83.2% | 81.0% |
+
+By stratum (author-weighted), attribution ranges from 76% to 98%, with no consistent published/unpublished direction.
+
+Reading:
+- **No evidence that unpublished arXiv papers are attributed to established author profiles less often than published ones**, provided the paper has OpenAlex authorships. If anything, the difference runs slightly the other way.
+- The "misses" are dominated by name ambiguity, not split profiles: common names on papers with several compatible names (e.g. "Jie Zhang" on a paper with seven other J. Zhangs; "Xu Wang" vs "X. Wang"). Attribution rates here are therefore lower bounds. A few look like real splits (same full name, different ID, same coauthor network).
+- Not covered: papers whose coauthors are also mis-attributed, and single-author papers.
+- With §4, the ORCID gap between published and unpublished papers looks more like **who the authors are** (fewer established, ORCID-holding researchers on unpublished papers) than OpenAlex failing to recognize established authors. That is a real sample-composition difference, but it is not an attribution error.
+
+**Real asymmetry found and fixed:** 4,784 unpublished 2023–24 arXiv papers (2.6%; 0 published) exist in OpenAlex only as xpac records. The first `authorship_long` dropped xpac works, so these papers could never count toward an author. `authorship_long_r20261106b` keeps xpac rows with an `is_xpac` flag. Formal-output and career-age rules still exclude xpac; exposure linkage now includes it.
 
 ## Open items
 
