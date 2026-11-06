@@ -1,0 +1,45 @@
+# Central configuration. Changing any value here that the SPEC marks [DECIDED] needs PI approval.
+project: openalex-AI-science
+
+openalex:
+  snapshot_s3: s3://openalex/data/parquet/
+  release_date: "2026-10-14"   # verified from manifest.json and RELEASE_NOTES.txt on 2026-11-05
+
+aws:
+  account_id: "596131721388"
+  region: us-east-1
+  work_bucket: oaai-phase0-596131721388
+  athena_workgroup: oaai-phase0
+  glue_database: openalex_2026_10
+  per_query_scan_limit_bytes: 200000000000   # 200 GB ≈ $1.00 per query
+  budget_usd: 100
+  budget_alerts_usd: [50, 80]
+  hard_stop_usd: 80
+
+windows:
+  prehistory_end: "2017-12-31"
+  baseline_sample: ["2018-01-01", "2021-12-31"]
+  baseline_did: ["2018H1", "2022H2"]
+  did_reference_period: "2022H2"
+  exposure_v1: ["2023-01-01", "2024-12-31"]
+  outcome_count: ["2025H1", "2026H1"]
+  pseudo_timeline:
+    baseline_sample: ["2012-01-01", "2015-12-31"]
+    pre: ["2012H1", "2016H2"]
+    exposure_v1: ["2017-01-01", "2018-12-31"]
+    outcome: ["2019H1", "2020H1"]
+
+sample:
+  min_baseline_works: 4
+  baseline_threshold_alternatives: [2, 3]
+  min_exposure_arxiv_m: [1, 2, 3]
+  max_authors_for_scoring: 50
+  k_papers_per_author: 3
+
+ai_researcher:
+  share_threshold: 0.50
+  alternatives: [0.25, 0.75]
+
+seeds:
+  paper_selection: 20261105
+  simulation: 20261106

@@ -1,0 +1,74 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadOpenAlexPublicSnapshot",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::openalex", "arn:aws:s3:::openalex/*"]
+    },
+    {
+      "Sid": "ProjectWorkBucket",
+      "Effect": "Allow",
+      "Action": [
+        "s3:CreateBucket", "s3:GetBucketLocation", "s3:ListBucket",
+        "s3:PutBucketPublicAccessBlock", "s3:PutLifecycleConfiguration", "s3:PutEncryptionConfiguration",
+        "s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"
+      ],
+      "Resource": ["arn:aws:s3:::oaai-phase0-596131721388", "arn:aws:s3:::oaai-phase0-596131721388/*"]
+    },
+    {
+      "Sid": "AthenaQueriesInProjectWorkgroup",
+      "Effect": "Allow",
+      "Action": [
+        "athena:CreateWorkGroup", "athena:GetWorkGroup",
+        "athena:StartQueryExecution", "athena:StopQueryExecution", "athena:GetQueryExecution",
+        "athena:GetQueryResults", "athena:GetQueryRuntimeStatistics", "athena:ListQueryExecutions",
+        "athena:BatchGetQueryExecution", "athena:GetDataCatalog", "athena:GetDatabase",
+        "athena:GetTableMetadata", "athena:ListDatabases", "athena:ListTableMetadata"
+      ],
+      "Resource": [
+        "arn:aws:athena:us-east-1:596131721388:workgroup/oaai-phase0",
+        "arn:aws:athena:us-east-1:596131721388:datacatalog/AwsDataCatalog"
+      ]
+    },
+    {
+      "Sid": "AthenaList",
+      "Effect": "Allow",
+      "Action": ["athena:ListWorkGroups"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "GlueCatalogForProjectDatabases",
+      "Effect": "Allow",
+      "Action": [
+        "glue:CreateDatabase", "glue:GetDatabase", "glue:GetDatabases",
+        "glue:CreateTable", "glue:UpdateTable", "glue:DeleteTable", "glue:GetTable", "glue:GetTables",
+        "glue:BatchCreatePartition", "glue:CreatePartition", "glue:GetPartition", "glue:GetPartitions",
+        "glue:BatchGetPartition", "glue:BatchDeletePartition"
+      ],
+      "Resource": [
+        "arn:aws:glue:us-east-1:596131721388:catalog",
+        "arn:aws:glue:us-east-1:596131721388:database/openalex_*",
+        "arn:aws:glue:us-east-1:596131721388:table/openalex_*/*"
+      ]
+    },
+    {
+      "Sid": "ReadOnlyCostVisibility",
+      "Effect": "Allow",
+      "Action": ["budgets:ViewBudget", "ce:GetCostAndUsage"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AgentCannotLoosenItsOwnLimits",
+      "Effect": "Deny",
+      "Action": [
+        "athena:UpdateWorkGroup", "athena:DeleteWorkGroup",
+        "budgets:ModifyBudget", "budgets:DeleteBudgetAction",
+        "s3:DeleteBucket", "s3:PutBucketPolicy",
+        "iam:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

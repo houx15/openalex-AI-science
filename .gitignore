@@ -1,0 +1,23 @@
+# Data, full text, model weights: never in git (SPEC §4, §12)
+/data/
+*.parquet
+*.tar
+*.tar.gz
+*.pdf
+*.tex
+models/
+weights/
+
+# Secrets
+.env
+*.pem
+credentials*
+secrets/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+.DS_Store

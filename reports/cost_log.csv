@@ -1,0 +1,8 @@
+date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_cost_usd,actual_cost_usd
+2026-11-05,(13 queries),create raw tables + MSCK repair (authors/domains/fields),sql/raw_*.sql,0,0,0.00,0.00
+2026-11-05,0f2914d1-e136-4bb5-8a49-adb3bd8cde3f,QC row counts by year x type x is_xpac,sql/qc_counts_year_type.sql,1000000000,596292204,0.005,0.003
+2026-11-05,(7 queries),MSCK repair remaining tables incl. works,sql/raw_*.sql,0,0,0.00,0.00
+2026-11-06,01880b1a-0e5d-44ea-8fcf-63a9aff0b653,test works_core SELECT on one partition (2026-10-10),sql/ctas_works_core.sql,5000000000,2781436546,0.025,0.014
+2026-11-06,976b26af-792d-4afe-a974-c7bb807d868f,CTAS works_core_r20261106a,sql/ctas_works_core.sql,165000000000,130560000000,0.83,0.65
+2026-11-06,b54b1175-f1ee-4da8-8046-abc1a49ea6fb,CTAS authorship_long_r20261106a,sql/ctas_authorship_long.sql,108000000000,112040000000,0.54,0.56
+2026-11-06,c3ed5a68-4d1b-4c5e-bffd-b1f6d76bcdd9 + bb412a8b-5246-43d6-9c58-84bac725e3b4,QC row counts on derived tables,(inline),5000000000,4263359021,0.025,0.021
