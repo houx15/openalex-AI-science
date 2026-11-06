@@ -96,7 +96,9 @@ Totals:
 | Calibration 2019-01–2022-10 | 1,884 GB | 1,605 GB | 669,359 |
 | Placebo 2017-01–2018-12 | 374 GB | 397 GB | 264,139 |
 
-The manifests list one item per paper; 452,524 is about our 452,913 v1 count. Whether the item is v1 or the version current when the tar was built is still [VERIFY]. This needs one tar opened, and it decides how often a later version would have to be replaced by v1 from per-paper access.
+**Bulk tars hold each paper's latest version, not v1** (checked 2026-11-06 on `src/arXiv_src_2301_001.tar`, 148 papers, md5 matches the manifest; `src/data/check_tar_versions.py`, `data/derived/funnel/tar_version_check_2301_001.csv`). arXiv rebuilt the tar on 2025-01-05. For the 59 papers with more than one version, the tar holds v1 for only 4 (6.8%) and the latest version for 53 (89.8%). Five spot checks against arXiv's per-version sizes all match the latest version, and two are 1 KB withdrawal stubs whose v1 was 4–24 MB. 21 of 148 members (14%) are PDF-only, with no LaTeX.
+
+Consequence: bulk tars give exact v1 only for papers with a single version. That is 58% of the selected papers: 158,054 of 271,952. The other 113,898 (42%) need `arxiv.org/e-print/<id>v1` one paper at a time. The share is stable at 43–44% for every v1 year 2019–2024.
 
 | Volume needed | Source (LaTeX) | PDF |
 |---|---|---|
@@ -112,7 +114,12 @@ The manifests list one item per paper; 452,524 is about our 452,913 v1 count. Wh
 | B. Bulk S3 → Adroit directly | ~2–4 TB out of AWS | Egress ≈ $0.09/GB → **$180–350** | Days | Exceeds the AWS cap; needs 2–4 TB of scratch |
 | C. Per-paper from arxiv.org | ~1.1 TB for 272k papers | $0 | ~10 days at 1 request / 3 s for main k = 3 (≈11 days with calibration) | arXiv asks bulk users to use S3. Gives exact v1 (`/e-print/<id>v1`). Good for the Phase 1 pilot (6k papers ≈ 5 hours) and for v1 replacements |
 
-**Recommendation:** use C for the Phase 1 pilot, which is small and v1-exact, and A for full scoring after the Phase 1 gate. Either way, Adroit stores only extracted text (≤30 GB), not tars.
+**Recommendation (revised after the tar check):**
+- **Phase 1 pilot:** C (per paper) for everything. It is v1-exact and takes about 5 hours.
+- **Full scoring: a hybrid of A and C.** Single-version papers (158k main + ~28k calibration) come from bulk tars on EC2 (~$10–30, hours). The ~136k revised papers (114k main + ~21.5k calibration) come per paper as v1 (~4.7 days at 1 request / 3 s). This follows arXiv's request that bulk users use S3, while keeping the main measure on v1 (SPEC §8).
+- **Simpler alternative:** C for all ~322k papers. It is free but takes ~11 days, and it is the kind of bulk website access arXiv asks people to avoid.
+
+Either way, Adroit stores only extracted text (≤30 GB), not tars.
 
 ## Is the panel needed?
 
@@ -124,5 +131,4 @@ Yes, for the main design. The outcome side and the author × publication panel c
 - 2026H1 completeness and the citation-window audit, which sizes the citation data.
 - Power and false-positive simulations, which decide whether all 290k authors are needed.
 - Usable-v1-text rate (LaTeX vs PDF) and language detection; the counts above assume usable text.
-- Open one bulk tar to check v1 vs later version (about 0.5 GB inside us-east-1; needs PI approval and a policy change).
 - GPU-hours: ProseLens and IdeaLens throughput is measured in the Phase 1 pilot. Multiply the paper counts above by the measured per-paper time.

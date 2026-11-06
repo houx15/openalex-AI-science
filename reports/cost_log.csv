@@ -38,3 +38,4 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-06,119d4f04-fcc6-49fb-8dd2-cc123c6d04f0,funnel by field and career age,(inline),,43924002,,0.0002
 2026-11-06,ca9cd361-f8bb-46ad-afd3-44d5c1670787,pseudo-timeline (2017-18) funnel size,sql/funnel_pseudo_timeline.sql,,11160843145,,0.056
 2026-11-06,(s3 GetObject requester-pays),arXiv src+pdf bulk manifests (11.3 MB),(none),,11339173,,0.001
+2026-11-06,(s3 CopyObject requester-pays + download),one arXiv bulk tar src/arXiv_src_2301_001.tar (543 MB) for v1 check,(none),,543334400,,0.05
