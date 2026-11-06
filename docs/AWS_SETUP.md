@@ -31,11 +31,11 @@ The PI creates these so the agent cannot edit them. Console: Billing → Budgets
 
 Budgets lag by hours and are not a hard stop. The real controls are the workgroup's per-query scan limit (set when the agent creates the workgroup, which it cannot change afterwards) and the agent's own rule to stop at $80 (SPEC §4).
 
-### 3. arXiv bulk manifests (added 2026-11-06)
+### 3. arXiv requester-pays bucket (updated 2026-11-06)
 
-Statement `ReadArxivBulkManifestsOnly` lets the agent read exactly two objects in the requester-pays bucket `s3://arxiv`: the `src` and `pdf` manifests. These list every bulk tar with its size and arXiv ID range, which is what Phase 0 needs to price bulk access. Each is a few MB, so the requester-pays charge is well under $0.01. The tars themselves stay blocked. Update by re-running step 1 (same policy name, so it replaces the old version).
+Statement `ReadArxivRequesterPaysBucket` lets the agent read anything in `s3://arxiv`. The PI chose one complete policy over step-by-step additions. The cost risk is the requester-pays charge: each tar is about 0.5 GB, so about $0.05 when read from outside AWS. The agent still downloads tars only with PI approval for each batch (SPEC §4 rule on arXiv full text), and logs each read in `reports/cost_log.csv`. Re-run step 1 to apply.
 
 ## Later (not needed yet)
 
-- arXiv bulk tars (`s3://arxiv/src/*.tar`, `pdf/*.tar`): needs separate PI approval for the spending (SPEC §4), then a policy addition.
+- EC2 in us-east-1 for bulk text extraction (Phase 2). An instance needs an IAM role to read S3. The agent cannot create roles or pass them (`iam:*` is denied), so the PI creates one role and the agent gets `iam:PassRole` on that role only, plus EC2 limited to tagged instances. This is drafted when scoring is approved.
 - Data transfer from S3 to Adroit: price it before moving anything.

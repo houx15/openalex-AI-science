@@ -8,13 +8,10 @@
       "Resource": ["arn:aws:s3:::openalex", "arn:aws:s3:::openalex/*"]
     },
     {
-      "Sid": "ReadArxivBulkManifestsOnly",
+      "Sid": "ReadArxivRequesterPaysBucket",
       "Effect": "Allow",
-      "Action": ["s3:GetObject"],
-      "Resource": [
-        "arn:aws:s3:::arxiv/src/arXiv_src_manifest.xml",
-        "arn:aws:s3:::arxiv/pdf/arXiv_pdf_manifest.xml"
-      ]
+      "Action": ["s3:GetObject", "s3:ListBucket"],
+      "Resource": ["arn:aws:s3:::arxiv", "arn:aws:s3:::arxiv/*"]
     },
     {
       "Sid": "ProjectWorkBucket",
