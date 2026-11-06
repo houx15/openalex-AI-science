@@ -1,8 +1,10 @@
 -- Phase 0 funnel (SPEC §7, §10 task 6): one row per author with >= 1 eligible work in 2018-2021.
 -- No outcomes (nothing after 2024 except arXiv-family membership), no scores.
--- Eligible work, v0 [PROPOSED; conference/book-chapter audit pending]: not xpac, publication date
---   present, type article or conference-paper, primary source journal, conference or book series
---   (book series admits LNCS-style proceedings), not paratext, not retracted.
+-- Eligible work, v1 [PROPOSED; reports/phase0_data_audit.md §9]: not xpac, publication date present,
+--   not paratext, not retracted, and one of: article with a journal/conference/book-series primary
+--   source; conference-paper with such a source, or with no primary source, raw type
+--   proceedings-article and a DOI; book-chapter in a book series with a conference-like name.
+--   (v0, run r20261106a, lacked the last two cases.)
 -- AI researcher [PROPOSED]: >= 50% of eligible 2018-2022 works have primary-topic subfield
 --   Artificial Intelligence (1702) or Computer Vision and Pattern Recognition (1707); counts kept so
 --   25%/75% alternatives come from this table.
@@ -17,8 +19,11 @@ WITH elig AS (
          subfield_id IN ('https://openalex.org/subfields/1702', 'https://openalex.org/subfields/1707') AS is_ai
   FROM works_core_r20261106a
   WHERE publication_year BETWEEN 2018 AND 2024 AND NOT is_xpac AND publication_date IS NOT NULL
-    AND type IN ('article', 'conference-paper') AND pl_source_type IN ('journal', 'conference', 'book series')
     AND NOT coalesce(is_paratext, false) AND NOT coalesce(is_retracted, false)
+    AND ((type IN ('article', 'conference-paper') AND pl_source_type IN ('journal', 'conference', 'book series'))
+      OR (type = 'conference-paper' AND pl_source_type IS NULL AND pl_raw_type = 'proceedings-article' AND doi IS NOT NULL)
+      OR (type = 'book-chapter' AND pl_source_type = 'book series'
+          AND regexp_like(lower(coalesce(pl_source_name, '')), 'lecture notes|proceedings|conference|symposium|workshop|communications in computer and information science|advances in intelligent systems|smart innovation')))
 ),
 au_work AS (
   SELECT DISTINCT al.author_id, e.work_id, e.publication_year, e.field_id, e.domain_id, e.is_ai

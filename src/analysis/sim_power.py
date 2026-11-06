@@ -23,10 +23,13 @@ Usage:
 
 import sys
 import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pyfixest as pf
+
+from src.analysis.fe_groups import add_fch
 
 SEED = 20261106
 HALVES = list(range(2018 * 2, 2022 * 2 + 2))  # 2018H1 .. 2022H2
@@ -69,7 +72,7 @@ def draw_types(a, p_w, p_i_w, p_i_nw, rng):
 
 
 def fit(p, types, effect_w=0.0, rng=None):
-    d = p.merge(types, on="author_id")
+    d = add_fch(p.merge(types, on="author_id"))
     if effect_w:
         lift = (d.W == 1) & (d.post == 1)
         d.loc[lift, "n"] = d.loc[lift, "n"] + rng.poisson((np.exp(effect_w) - 1) * d.loc[lift, "n"])
@@ -91,20 +94,25 @@ def main(panel_csv, authors_csv, out_csv, reps=3):
     rng = np.random.default_rng(SEED)
     a, p = build_panel(panel_csv, authors_csv)
     print(f"panel: {a.author_id.nunique():,} authors, {len(p):,} rows; mean count {p.n.mean():.2f}", flush=True)
-    rows = []
+    fits_csv = out_csv.replace(".csv", "_fits.csv")  # resumable: one row per finished fit
+    rows = pd.read_csv(fits_csv).to_dict("records") if Path(fits_csv).exists() else []
+    done = {(r["authors"], r["scenario"], r["rep"]) for r in rows}
     for size in SAMPLE_SIZES:
         sub = a if size >= len(a) else a.sample(size, random_state=SEED)
         ps = p[p.author_id.isin(sub.author_id)]
         for label, p_w, p_i_w, p_i_nw in SCENARIOS:
             for r in range(int(reps)):
+                if (len(sub), label, r) in done:
+                    continue
                 t0 = time.time()
                 res = fit(ps, draw_types(sub, p_w, p_i_w, p_i_nw, rng))
                 rows.append({"authors": len(sub), "scenario": label, "rep": r, **res,
                              "seconds": round(time.time() - t0, 1)})
                 print(rows[-1], flush=True)
+                pd.DataFrame(rows).to_csv(fits_csv, index=False)
     out = pd.DataFrame(rows)
     # injected-effect check on the full sample, mid scenario: power at the computed MDE for W vs N
-    full_mid = out[(out.authors == len(a)) & (out.scenario == "mid")]
+    full_mid = out[(out.authors == out.authors.max()) & (out.scenario == "mid")]
     mde_log = 2.8 * full_mid.se_w.mean()
     hits = []
     for r in range(int(reps) * 3):

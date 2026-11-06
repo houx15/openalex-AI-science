@@ -36,11 +36,14 @@ import numpy as np
 import pandas as pd
 import pyfixest as pf
 
+from src.analysis.fe_groups import add_fch
+
 SEED = 20261106
 SELECT_SEED = "20261105"
 HALVES = list(range(2012 * 2, 2020 * 2 + 1))  # 2012H1 .. 2020H1
 PRE_END, EXP_START, EXP_END, POST_START = 2016 * 2 + 1, 2017 * 2, 2018 * 2 + 1, 2019 * 2
 BASE_P, P_I_W, P_I_NW, GAMMA = 0.15, 0.25, 0.02, 0.5
+FIT_KW = {"fixef_maxiter": 200_000}  # default 10,000 did not converge on 50k authors
 SCENARIOS = ["S0_random", "S1_output_trend", "S2_young", "S3_arxiv_intensity", "S4_low_baseline"]
 
 
@@ -107,7 +110,7 @@ def coef(m, name):
 
 
 def fit_r1(p, t, exclusion=True, volume=True, post_end=2020 * 2, by_ni=False):
-    d = p[(p.half <= PRE_END) | ((p.half >= POST_START) & (p.half <= post_end))].merge(t, on="author_id")
+    d = add_fch(p[(p.half <= PRE_END) | ((p.half >= POST_START) & (p.half <= post_end))].merge(t, on="author_id"))
     d["post"] = (d.half >= POST_START).astype(int)
     d["y"] = np.where((d.post == 1) & exclusion, d.n_excl, d.n_all)
     fe = "author_id + fch" + (" + eh" if volume else "")
@@ -117,12 +120,12 @@ def fit_r1(p, t, exclusion=True, volume=True, post_end=2020 * 2, by_ni=False):
             for ty in ("W", "WI", "I"):
                 d[f"{ty}_post_n{k}"] = d[ty] * d.post * (d.n_i == k)
                 terms.append(f"{ty}_post_n{k}")
-        m = pf.fepois(f"y ~ {' + '.join(terms)} | {fe}", data=d, vcov={"CRV1": "author_id"})
+        m = pf.fepois(f"y ~ {' + '.join(terms)} | {fe}", data=d, vcov={"CRV1": "author_id"}, **FIT_KW)
         return {f"b_W_n{k}": coef(m, f"W_post_n{k}")[0] for k in (1, 2, 3)} | \
                {f"se_W_n{k}": coef(m, f"W_post_n{k}")[1] for k in (1, 2, 3)}
     for ty in ("W", "WI", "I"):
         d[f"{ty}_post"] = d[ty] * d.post
-    m = pf.fepois(f"y ~ W_post + WI_post + I_post | {fe}", data=d, vcov={"CRV1": "author_id"})
+    m = pf.fepois(f"y ~ W_post + WI_post + I_post | {fe}", data=d, vcov={"CRV1": "author_id"}, **FIT_KW)
     names = list(m.coef().index)
     v = m._vcov
     iw, iwi = names.index("W_post"), names.index("WI_post")
@@ -133,9 +136,9 @@ def fit_r1(p, t, exclusion=True, volume=True, post_end=2020 * 2, by_ni=False):
 
 def fit_r2(p, f):
     first = f[f.w].groupby("author_id").v1_half.min().rename("detect_half")
-    d = p.merge(first, on="author_id", how="left")
+    d = add_fch(p.merge(first, on="author_id", how="left"))
     d["D"] = (d.half >= d.detect_half).fillna(False).astype(int)
-    m = pf.fepois("n_all ~ D | author_id + fch + eh", data=d, vcov={"CRV1": "author_id"})
+    m = pf.fepois("n_all ~ D | author_id + fch + eh", data=d, vcov={"CRV1": "author_id"}, **FIT_KW)
     b, se = coef(m, "D")
     return {"b_W": b, "se_W": se}
 
@@ -147,8 +150,8 @@ def fit_r3(p, f):
         s = g[g.v1_half <= h - 1].groupby("author_id").agg(nw=("nw", "sum"), n=("n", "sum"))  # lagged one half-year
         rows.append(pd.DataFrame({"author_id": s.index, "half": h, "X": (s.nw / s.n).to_numpy()}))
     x = pd.concat(rows)
-    d = p.merge(x, on=["author_id", "half"], how="left").fillna({"X": 0.0})
-    m = pf.fepois("n_all ~ X | author_id + fch + eh", data=d, vcov={"CRV1": "author_id"})
+    d = add_fch(p.merge(x, on=["author_id", "half"], how="left").fillna({"X": 0.0}))
+    m = pf.fepois("n_all ~ X | author_id + fch + eh", data=d, vcov={"CRV1": "author_id"}, **FIT_KW)
     b, se = coef(m, "X")
     return {"b_W": b, "se_W": se}
 

@@ -270,6 +270,38 @@ The share is highest in social sciences: 26.5% in 2018, 11.5% in 2025. These are
 
 **Scan cost of dated citation edges.** Building `referenced_works` → citing publication date needs about 37 GB per build (`referenced_works` 31.6 GB, plus id and date columns), about $0.19.
 
+## 9. Conference and book-chapter classification (SPEC §7)
+
+Works from 2018–2021, non-xpac. Queries `47a7516b`, `6a7ce715`, `da55c8e8`, `5f6013d9`.
+
+**Conference papers with no primary source are real proceedings.**
+- 375,445 `conference-paper` works have no primary source and Crossref raw type `proceedings-article`.
+- The top DOI prefixes are IEEE 10.1109 (83.5k), SPIE 10.1117 (41.1k), ACM 10.1145 (29.8k), Atlantis Press 10.2991 (22.0k), ASME 10.1115 (18.3k) and ACL 10.18653 (6.8k).
+- All have a published location.
+- The v0 eligibility rule (`reports/phase0_funnel.md`) drops them because it requires a journal, conference or book-series primary source. That undercounts formal output in CS and engineering, the fields that dominate the sample.
+
+**Book chapters that are conference papers.** 64,187 book chapters sit in book series with conference-like names (Lecture Notes …, Communications in Computer and Information Science, Advances in Intelligent Systems …, Proceedings …). This is the Springer pattern described by Kusumegi et al. A further 423k book-series chapters have other names, a mix of edited volumes and some proceedings. 3.0M book chapters are on ebook platforms, mostly edited volumes.
+
+**Repository-only conference objects** (HAL, institutional repositories, Zenodo; about 0.4M) are mostly deposits of papers with a formal version elsewhere, or local proceedings. Exclude them, as in v0.
+
+**Proposed eligibility rule v1** [PROPOSED, replaces v0]:
+- `article` with a journal or conference primary source, as before;
+- `conference-paper` with a journal, conference or book-series primary source, **or with no primary source, raw type `proceedings-article` and a DOI**;
+- `book-chapter` in a book series whose name matches the conference pattern;
+- otherwise unchanged (non-xpac, dated, not paratext or retracted).
+
+**Effect on the funnel** (`author_funnel_r20261106b` under v1, against `r20261106a` under v0; query `c09a0bc5`):
+
+| | v0 | v1 | Change |
+|---|---|---|---|
+| ≥4 eligible works 2018–21 | 5,009,495 | 5,079,341 | +1.4% |
+| Main sample, m = 1 | 290,330 | 293,950 | +1.2% |
+| m = 3 | 105,575 | 106,441 | +0.8% |
+| AI researchers excluded (m = 1) | 31,799 | 33,506 | +5.4% |
+| Author-paper slots, k = 3 | 553,468 | 559,552 | +1.1% |
+
+Almost all of the change is in Physical Sciences (+3,475 m = 1 authors). v1 matters more for **outcome counts** of CS and engineering authors than for who enters the sample. The power and false-positive simulations use v0 inputs; the difference is too small to change their conclusions.
+
 ## Open items
 
 1. **PI decision (exposure eligibility).** About 0.9% of 2023–24 arXiv papers are versions of papers published years earlier, e.g. a 2017 IEEE article first posted to arXiv in 2024. SPEC §6 defines exposure by v1 date alone, so these would be scored as 2023–24 text. **Proposed:** exclude papers whose family has a formal publication dated before 2022 from exposure scoring. Not applied.
