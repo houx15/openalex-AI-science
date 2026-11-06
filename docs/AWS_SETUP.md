@@ -31,7 +31,11 @@ The PI creates these so the agent cannot edit them. Console: Billing → Budgets
 
 Budgets lag by hours and are not a hard stop. The real controls are the workgroup's per-query scan limit (set when the agent creates the workgroup, which it cannot change afterwards) and the agent's own rule to stop at $80 (SPEC §4).
 
+### 3. arXiv bulk manifests (added 2026-11-06)
+
+Statement `ReadArxivBulkManifestsOnly` lets the agent read exactly two objects in the requester-pays bucket `s3://arxiv`: the `src` and `pdf` manifests. These list every bulk tar with its size and arXiv ID range, which is what Phase 0 needs to price bulk access. Each is a few MB, so the requester-pays charge is well under $0.01. The tars themselves stay blocked. Update by re-running step 1 (same policy name, so it replaces the old version).
+
 ## Later (not needed yet)
 
-- arXiv requester-pays bucket (`s3://arxiv`): needs separate PI approval for the spending (SPEC §4), then a policy addition.
+- arXiv bulk tars (`s3://arxiv/src/*.tar`, `pdf/*.tar`): needs separate PI approval for the spending (SPEC §4), then a policy addition.
 - Data transfer from S3 to Adroit: price it before moving anything.
