@@ -4,6 +4,7 @@ PI decisions made during execution. Newest first.
 
 | Date | Decision | Context |
 |---|---|---|
+| 2026-11-06 | Full-text acquisition: hybrid. Phase 1 pilot per paper from arxiv.org; full scoring takes single-version papers from bulk S3 tars on EC2 and fetches v1 of revised papers (~42%) per paper | PI. Bulk tars hold the latest version (tar check, `reports/phase0_funnel.md`) |
 | 2026-11-06 | AWS access set up for full-text extraction: agent can read `s3://arxiv` (requester pays) and launch tagged EC2 instances in us-east-1 (5 CPU types, ≤500 GB disks) running as role `oaai-extract-ec2`. Agent policy is now the managed policy `oaai-phase0-agent`. Agent still asks before downloading any tar or launching any instance | PI asked for one complete policy (2026-11-06). Recommended plan: per-paper arxiv.org download for the Phase 1 pilot, bulk S3 → EC2 extraction for full scoring after the Phase 1 gate (`reports/phase0_funnel.md`) |
 | 2026-11-06 | `authorship_long` keeps xpac works (flagged `is_xpac`): exposure linkage uses them, formal outputs and career age exclude them | Author-bridge audit: 2.6% of unpublished 2023–24 arXiv papers exist in OpenAlex only as xpac records; dropping xpac biased exposure sets toward published papers |
 | 2026-11-06 | v1 dates and all window boundaries use UTC (arXiv records version dates in GMT) | Interpretation of SPEC §6 'by arXiv v1 date'; 3 of 452,916 2023–24 papers change window under US Eastern time |

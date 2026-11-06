@@ -39,3 +39,8 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-06,ca9cd361-f8bb-46ad-afd3-44d5c1670787,pseudo-timeline (2017-18) funnel size,sql/funnel_pseudo_timeline.sql,,11160843145,,0.056
 2026-11-06,(s3 GetObject requester-pays),arXiv src+pdf bulk manifests (11.3 MB),(none),,11339173,,0.001
 2026-11-06,(s3 CopyObject requester-pays + download),one arXiv bulk tar src/arXiv_src_2301_001.tar (543 MB) for v1 check,(none),,543334400,,0.05
+2026-11-06,bd30b4f8-86ca-4bc9-a32b-6a0ef8e5fa9d,power sim panel: main-sample half-year counts 2018-2022,sql/sim_power_panel.sql,,2132934611,,0.011
+2026-11-06,d4a8fa1c-e685-4dc7-a709-6ef462fa522f,power sim author attributes,sql/sim_power_authors.sql,,153322858,,0.001
+2026-11-06,a25d185d-1ec1-4ca4-be27-f443f65da829,CTAS pseudo_author_papers_r20261106a,sql/sim_pseudo_authors.sql,,17839067697,,0.089
+2026-11-06,1ec928f8-18d4-4ec7-849d-7f65984dcf22,pseudo-timeline half-year counts 2012-2020,sql/sim_pseudo_counts.sql,,3238585210,,0.016
+2026-11-06,b6209cea-ce01-458f-b2d3-3e8c0a3c38b0,export pseudo_author_papers,(inline),,10574510,,0.0001
