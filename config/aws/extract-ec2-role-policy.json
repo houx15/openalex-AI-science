@@ -1,0 +1,26 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadArxivRequesterPaysBucket",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:ListBucket"],
+      "Resource": ["arn:aws:s3:::arxiv", "arn:aws:s3:::arxiv/*"]
+    },
+    {
+      "Sid": "ReadProjectBucket",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::oaai-phase0-596131721388", "arn:aws:s3:::oaai-phase0-596131721388/*"]
+    },
+    {
+      "Sid": "WriteExtractedTextAndLogsOnly",
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"],
+      "Resource": [
+        "arn:aws:s3:::oaai-phase0-596131721388/fulltext/*",
+        "arn:aws:s3:::oaai-phase0-596131721388/logs/extract/*"
+      ]
+    }
+  ]
+}

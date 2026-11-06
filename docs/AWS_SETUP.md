@@ -35,7 +35,49 @@ Budgets lag by hours and are not a hard stop. The real controls are the workgrou
 
 Statement `ReadArxivRequesterPaysBucket` lets the agent read anything in `s3://arxiv`. The PI chose one complete policy over step-by-step additions. The cost risk is the requester-pays charge: each tar is about 0.5 GB, so about $0.05 when read from outside AWS. The agent still downloads tars only with PI approval for each batch (SPEC §4 rule on arXiv full text), and logs each read in `reports/cost_log.csv`. Re-run step 1 to apply.
 
-## Later (not needed yet)
+### 4. EC2 text extraction: role + agent permissions (added 2026-11-06)
 
-- EC2 in us-east-1 for bulk text extraction (Phase 2). An instance needs an IAM role to read S3. The agent cannot create roles or pass them (`iam:*` is denied), so the PI creates one role and the agent gets `iam:PassRole` on that role only, plus EC2 limited to tagged instances. This is drafted when scoring is approved.
+For full-text extraction next to the arXiv bucket (`reports/phase0_funnel.md`, option A), the agent launches short-lived EC2 instances in us-east-1, and each instance runs as role `oaai-extract-ec2`. Launching costs money, and the agent still asks before each extraction run (SPEC §4).
+
+Files:
+- `config/aws/extract-ec2-role-trust.json`: only EC2 in this account can use the role.
+- `config/aws/extract-ec2-role-policy.json`: the instance may read `s3://arxiv` and the project bucket, and write only `fulltext/` and `logs/extract/` in the project bucket.
+- `config/aws/phase0-agent-policy.json`: adds EC2 for the agent. Its limits:
+  - us-east-1 only;
+  - instance types c7i.2xlarge, c7i.4xlarge, c7i.8xlarge, m7i.4xlarge or c6i.4xlarge;
+  - instances and volumes must be tagged `Project=oaai`, volumes ≤500 GB;
+  - the agent can stop or terminate only tagged instances;
+  - it can pass only `oaai-extract-ec2` to EC2;
+  - all other IAM actions stay denied, including any change to that role.
+
+The agent policy is now about 4,600 characters, which may exceed the size limit for an inline user policy. So it becomes a customer-managed policy (6,144-character limit) attached to the user. Run as admin, from the repo root:
+
+```bash
+# role for the instances
+aws iam create-role --role-name oaai-extract-ec2 \
+  --assume-role-policy-document file://config/aws/extract-ec2-role-trust.json
+aws iam put-role-policy --role-name oaai-extract-ec2 --policy-name oaai-extract \
+  --policy-document file://config/aws/extract-ec2-role-policy.json
+aws iam create-instance-profile --instance-profile-name oaai-extract-ec2
+aws iam add-role-to-instance-profile --instance-profile-name oaai-extract-ec2 --role-name oaai-extract-ec2
+
+# agent policy: managed policy replaces the inline one
+aws iam create-policy --policy-name oaai-phase0-agent \
+  --policy-document file://config/aws/phase0-agent-policy.json
+aws iam attach-user-policy --user-name phase0-agent \
+  --policy-arn arn:aws:iam::596131721388:policy/oaai-phase0-agent
+aws iam delete-user-policy --user-name phase0-agent --policy-name oaai-phase0
+```
+
+Later edits to the agent policy:
+```bash
+aws iam create-policy-version --policy-arn arn:aws:iam::596131721388:policy/oaai-phase0-agent \
+  --policy-document file://config/aws/phase0-agent-policy.json --set-as-default
+```
+A managed policy keeps at most 5 versions; delete old ones with `aws iam delete-policy-version` when needed.
+
+Notes:
+- The instances use the default VPC and no SSH key. The job runs from the launch script, and logs go to `logs/extract/`. The agent checks the default VPC exists with `ec2:DescribeVpcs`.
+- On-demand only. Spot would need a service-linked role that the agent cannot create.
+- Each instance shuts itself down (shutdown behavior = terminate) when the job ends, with a hard time limit in the launch script.
 - Data transfer from S3 to Adroit: price it before moving anything.

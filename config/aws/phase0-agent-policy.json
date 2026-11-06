@@ -66,15 +66,97 @@
       "Resource": "*"
     },
     {
+      "Sid": "Ec2Describe",
+      "Effect": "Allow",
+      "Action": ["ec2:Describe*"],
+      "Resource": "*",
+      "Condition": {"StringEquals": {"aws:RequestedRegion": "us-east-1"}}
+    },
+    {
+      "Sid": "Ec2LaunchTaggedInstanceOfAllowedTypes",
+      "Effect": "Allow",
+      "Action": "ec2:RunInstances",
+      "Resource": "arn:aws:ec2:us-east-1:596131721388:instance/*",
+      "Condition": {
+        "StringEquals": {"aws:RequestTag/Project": "oaai"},
+        "StringLike": {"ec2:InstanceType": ["c7i.2xlarge", "c7i.4xlarge", "c7i.8xlarge", "m7i.4xlarge", "c6i.4xlarge"]}
+      }
+    },
+    {
+      "Sid": "Ec2LaunchTaggedVolumeUpTo500GB",
+      "Effect": "Allow",
+      "Action": "ec2:RunInstances",
+      "Resource": "arn:aws:ec2:us-east-1:596131721388:volume/*",
+      "Condition": {
+        "StringEquals": {"aws:RequestTag/Project": "oaai"},
+        "NumericLessThanEquals": {"ec2:VolumeSize": "500"}
+      }
+    },
+    {
+      "Sid": "Ec2LaunchAmazonImagesInDefaultNetwork",
+      "Effect": "Allow",
+      "Action": "ec2:RunInstances",
+      "Resource": [
+        "arn:aws:ec2:us-east-1::image/*",
+        "arn:aws:ec2:us-east-1:596131721388:subnet/*",
+        "arn:aws:ec2:us-east-1:596131721388:security-group/*",
+        "arn:aws:ec2:us-east-1:596131721388:network-interface/*"
+      ],
+      "Condition": {"StringEquals": {"aws:RequestedRegion": "us-east-1"}}
+    },
+    {
+      "Sid": "Ec2TagOnlyAtLaunch",
+      "Effect": "Allow",
+      "Action": "ec2:CreateTags",
+      "Resource": [
+        "arn:aws:ec2:us-east-1:596131721388:instance/*",
+        "arn:aws:ec2:us-east-1:596131721388:volume/*",
+        "arn:aws:ec2:us-east-1:596131721388:network-interface/*"
+      ],
+      "Condition": {"StringEquals": {"ec2:CreateAction": "RunInstances"}}
+    },
+    {
+      "Sid": "Ec2ManageOnlyProjectInstances",
+      "Effect": "Allow",
+      "Action": ["ec2:TerminateInstances", "ec2:StopInstances", "ec2:GetConsoleOutput"],
+      "Resource": "arn:aws:ec2:us-east-1:596131721388:instance/*",
+      "Condition": {"StringEquals": {"aws:ResourceTag/Project": "oaai"}}
+    },
+    {
+      "Sid": "PassOnlyTheExtractionRoleToEc2",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::596131721388:role/oaai-extract-ec2",
+      "Condition": {"StringEquals": {"iam:PassedToService": "ec2.amazonaws.com"}}
+    },
+    {
       "Sid": "AgentCannotLoosenItsOwnLimits",
       "Effect": "Deny",
       "Action": [
         "athena:UpdateWorkGroup", "athena:DeleteWorkGroup",
         "budgets:ModifyBudget", "budgets:DeleteBudgetAction",
-        "s3:DeleteBucket", "s3:PutBucketPolicy",
-        "iam:*"
+        "s3:DeleteBucket", "s3:PutBucketPolicy"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "NoIamExceptPassingTheExtractionRole",
+      "Effect": "Deny",
+      "Action": "iam:*",
+      "NotResource": "arn:aws:iam::596131721388:role/oaai-extract-ec2"
+    },
+    {
+      "Sid": "NoChangesToTheExtractionRole",
+      "Effect": "Deny",
+      "NotAction": "iam:PassRole",
+      "Resource": "arn:aws:iam::596131721388:role/oaai-extract-ec2"
+    },
+    {
+      "Sid": "NoEc2OutsideUsEast1",
+      "Effect": "Deny",
+      "Action": "ec2:*",
+      "Resource": "*",
+      "Condition": {"StringNotEquals": {"aws:RequestedRegion": "us-east-1"}}
     }
   ]
 }
