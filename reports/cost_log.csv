@@ -14,3 +14,6 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-06,43a1881e-073d-4e3b-b53f-93b53329ba52,crosswalk precision audit sample (400 links; titles),(inline),6000000000,4650521147,0.03,0.023
 2026-11-06,c7ede68a + 9a822677,crosswalk flags QC + early-published examples,(inline),12000000000,11020084438,0.06,0.055
 2026-11-06,1f200ff3-a98f-45b7-a1e0-4d915b24f9e3,CTAS paper_family_r20261106b (adds link_flag),sql/ctas_paper_family.sql,15000000000,14351075550,0.075,0.072
+2026-11-06,c5dde0a6-0dc3-47b5-b53c-b3f3fc18f872,selection check: author-ID/ORCID coverage by publication status (2023-24 arXiv),(inline),5000000000,2686155165,0.025,0.013
+2026-11-06,23578217-5b68-4e5d-b131-75e715b0f178,selection check: share of authorships on established (>=4 baseline) profiles,(inline),5000000000,2436926440,0.025,0.012
+2026-11-06,dd0c6711-4e8a-45e8-b414-78d128fb8949,selection check: same split by ORCID,(inline),5000000000,3399460135,0.025,0.017

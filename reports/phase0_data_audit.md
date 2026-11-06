@@ -10,7 +10,7 @@ Status: **in progress**. Sections are added as each check finishes.
 | arXiv metadata | Kaggle `Cornell-University/arxiv`, dataset version 21506946, snapshot file dated 2026-11-01, sha256 `dcaa0325…5795` |
 | Derived tables | `works_core_r20261106a`, `authorship_long_r20261106a`, `paper_family_r20261106b` (Glue database `openalex_2026_10`) |
 | SQL | `sql/ctas_works_core.sql`, `sql/ctas_authorship_long.sql`, `sql/ctas_paper_family.sql` |
-| AWS cost to date | $1.48 (`reports/cost_log.csv`) |
+| AWS cost to date | $1.53 (`reports/cost_log.csv`) |
 
 ## 1. Snapshot reconciliation
 
@@ -95,6 +95,43 @@ Formal-output rules must handle conference papers with no published location (11
 |---|---|---|
 | `exclude_peer_review` | 3,323 | A referee report carries the arXiv ID. Drop from families. |
 | `published_before_v1` | 19,330 | Work published 2+ years before the arXiv v1. The link is correct (an old paper posted late), but see the PI decision below. |
+
+## 4. Selection on publication status (raised by PI, 2026-11-06)
+
+Question: does the arXiv→OpenAlex pipeline favour papers that were published, or published quickly?
+
+The ~99.9% match rate does not involve selection, because almost every arXiv paper links to OpenAlex's own arXiv record. Selection can still enter through: (a) eligibility rules based on OpenAlex `type`, since unpublished papers are all typed `preprint`; (b) author identification; (c) unlinked published versions staying in outcomes; (d) the proposed pre-2022 exposure exclusion, which conditions on earlier publication.
+
+Test of (b), on arXiv papers with v1 in 2023–2024, comparing published vs never-published families:
+
+| | Unpublished | Published |
+|---|---|---|
+| Papers | 185,188 | 267,456 |
+| Authorships with an OpenAlex author ID | 90.4% | 88.7% |
+| Authorships with ORCID | 74.0% | 85.0% |
+| Papers with no authorship rows | **4.69%** | 0.0% |
+| Mean distinct authors | 4.0 | 10.2 |
+
+Share of (paper, author) pairs whose author has ≥4 article/conference works in 2018–2021:
+
+| Field group | Authorship has ORCID? | Unpublished | Published | Gap |
+|---|---|---|---|---|
+| cs/math/stat/eess | all | 60.3% | 64.2% | −3.9 |
+| cs/math/stat/eess | yes | 72.0% | 71.2% | +0.8 |
+| cs/math/stat/eess | no | 16.8% | 17.5% | −0.7 |
+| other | all | 71.1% | 79.2% | −8.1 |
+| other | yes | 78.1% | 83.4% | −5.3 |
+| other | no | 24.4% | 38.9% | −14.5 |
+
+Reading:
+- In cs/math/stat/eess, the gap disappears within ORCID strata. It comes from unpublished papers having more non-ORCID authorships (21% vs 13% of pairs), and non-ORCID authorships rarely sit on established profiles (about 17% vs 72%). That fits author-profile fragmentation when no ORCID is present, though genuinely new authors are also more common without ORCID. The two can't be separated yet.
+- In other fields a gap remains even with ORCID. Large physics collaborations, which are mostly published and mostly established authors, likely contribute. Repeat with the ≤50-author scoring rule before drawing conclusions.
+- 4.7% of unpublished 2023–24 papers have no authors in OpenAlex and can never enter an author's exposure set.
+
+Implications to carry into the design (for the Phase 0 gate):
+1. Exposure eligibility (research paper vs review/position/note) must use arXiv-side information applied the same way to all papers, not OpenAlex `type`.
+2. An author's exposure papers come from OpenAlex attribution, which is less complete for unpublished papers, especially without ORCID. Signal types could then be computed from a published-skewed set of papers. Planned checks: ORCID-only robustness (already in SPEC §9), a published-vs-unpublished split of signal prevalence at the Phase 1 pilot, and an estimate of how many unpublished papers by sampled authors are missing from their profiles (name + coauthor matching on a sample).
+3. The proposed pre-2022 exposure exclusion conditions on publication. Treat it as a robustness check, not the main rule, unless the PI prefers otherwise.
 
 ## Open items
 
