@@ -186,10 +186,47 @@ Implications:
 2. **§4 published/unpublished comparisons.** At least 13% of the "unpublished" group is in fact published. The §4 gaps are therefore attenuated and should be re-run after the fallback. Directions are unlikely to change.
 3. **Published share (lower bound) rises** from 61.6% to 67.2% for v1 2023, and from 56.9% to 62.3% for v1 2024.
 
+## 7. Title + author fallback for `paper_family` (built)
+
+Covers arXiv papers with v1 in 2023–2024 and candidate works published 2022–2026. Output is the Athena table `paper_family_fallback_r20261106a`; production families are `paper_family_r20261106b` ∪ fallback links.
+
+Candidates:
+- **Author-blocked** (`sql/fallback_candidates_author_block.sql`): article, conference-paper, book-chapter, review or letter works (non-xpac) that share at least one OpenAlex author ID with the paper's family, with similar titles. Families with more than 50 authors are skipped.
+- **Exact title, any authors** (`sql/fallback_candidates_exact_title.sql`): author names are checked locally.
+
+Accept rules [PROPOSED] (`src/data/paper_family_fallback.py`):
+
+| Method | Rule | Links | arXiv papers |
+|---|---|---|---|
+| `title_exact_id` | exact normalized title + ≥1 shared author ID | 33,083 | 30,629 |
+| `title_exact_name` | exact title (≥25 chars) + compatible author name + formal-output work | 781 | 767 |
+| `title_fuzzy_id` | shared author ID, work not linked to another arXiv paper, published ≤365 days before v1, and Levenshtein similarity ≥ 0.9, or token Jaccard ≥ 0.8 as each side's best candidate | 17,731 | 17,415 |
+
+**Precision** (manual review of fixed-seed samples):
+- Exact title: all sampled pairs correct, including short titles.
+- Levenshtein ≥ 0.9: 24/25 correct. The miss was a yearly shared-task system paper ("IWSLT 2024" vs "IWSLT 2025").
+- Jaccard rule: about 26–27/30 correct. Misses are companion papers by the same authors.
+- Weighted precision is about 97%, above the 0.95 target in SPEC §7.
+
+**Recall** (`sql/audit_fallback_recall.sql`), measured on 7,478 known separate published versions:
+
+| Rule | Recall |
+|---|---|
+| Exact title + shared ID | 48.7% |
+| + Levenshtein ≥ 0.9 | 62.9% |
+| + Jaccard ≥ 0.8 | 67.5% (upper bound; best-candidate condition not applied) |
+
+Recall is lower in cs/math (about 60%) than in other fields (about 71%), because titles change more at publication.
+
+Effect:
+- 42,784 of the 185,454 "unpublished" 2023–24 families (23.1%) gain a published version.
+- A further 6,171 links attach extra versions to families that were already published.
+- **Residual:** dividing by recall puts the true number of unlinked published versions at about 63k. That leaves about 20k (≈11% of the originally "unpublished") still missed. In the outcome window these would be counted as new output. SPEC's robustness check that adds exposure papers back covers this direction. A further option is to drop all 2025–26 works sharing an author ID with the author's own exposure paper and having title Jaccard ≥ 0.5 [to decide at the Phase 0 gate].
+
 ## Open items
 
 1. **PI decision (exposure eligibility).** About 0.9% of 2023–24 arXiv papers are versions of papers published years earlier, e.g. a 2017 IEEE article first posted to arXiv in 2024. SPEC §6 defines exposure by v1 date alone, so these would be scored as 2023–24 text. **Proposed:** exclude papers whose family has a formal publication dated before 2022 from exposure scoring. Not applied.
-2. **Unlinked published versions (§6).** Add a title + author fallback to `paper_family`: exact title first, then fuzzy title with author and date checks. Measure the residual, then re-run the §4 comparisons.
+2. **Unlinked published versions.** The fallback is built (§7) with precision ≈97% and recall ≈65%. Still to do: decide the residual rule at the gate, extend the fallback to pseudo-timeline v1 years (2017–2018), and re-run the §4 comparisons with fallback-augmented families.
 3. Resolve the 93 duplicate arXiv IDs and the ~1,500 works linked to several arXiv papers.
 4. Sample check of v1 dates against OAI-PMH once the endpoint works.
 5. Remaining audit sections: conference and book-chapter classification, preprint handling, 2026H1 completeness, author-ID quality, indexing delay, `has_content` coverage.

@@ -25,3 +25,14 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-06,5fb8fbad-3c23-499f-a944-16a6c291f368,exact-title candidates for unlinked published versions,sql/audit_title_match_unlinked.sql,,23277235131,,0.116
 2026-11-06,69909611-5787-48f6-b301-26ab9e83481e,exact-title recall on known published versions,sql/audit_title_match_recall.sql,,10908750508,,0.055
 2026-11-06,02b814ac-5d52-4288-a385-eb1141089389,unpublished/published denominators by v1 year x field,(inline),,43704361,,0.0002
+2026-11-06,f4676f56-cae0-4bad-8750-085bccdd6452,fallback candidates: author-ID blocked fuzzy titles,sql/fallback_candidates_author_block.sql,,12980205158,,0.065
+2026-11-06,58470ae7-683b-4dee-bd74-b1e731d72792,fallback candidates: exact titles (all 2023-24 families),sql/fallback_candidates_exact_title.sql,,23277235131,,0.116
+2026-11-06,688f806b-1985-4164-8b24-ef05eec630ba + 1e59b5a6-f568-47f6-8eb2-2b10f6242acc,subfield list; type x source type 2018-21,(inline),,34841895,,0.0002
+2026-11-06,bfee16d7-806d-4381-8d6f-aa962ed1d82e,CTAS author_funnel_r20261106a,sql/ctas_author_funnel.sql,,30626675210,,0.153
+2026-11-06,ccac00d0-a1c9-4889-92bd-aafb53ddef85,works 2022+ already linked to arXiv,(inline),,31308864,,0.0002
+2026-11-06,d0f7a740-a624-4778-93ec-1afcb54a7dde,funnel counts by domain,sql/funnel_counts.sql,,208191415,,0.001
+2026-11-06,bb6a1849-f6f2-4ce8-8400-923d0379aaea,fallback recall on known published versions,sql/audit_fallback_recall.sql,,15271329164,,0.076
+2026-11-06,41cdf1cd-2d41-4826-944d-ef132dbd6cb2,main-sample arXiv paper list (k=3 selection flag),(inline),,160827220,,0.0008
+2026-11-06,e419371c-e656-4721-adee-386e67647250 + 52f6540c-b7b7-4b64-a701-f4d6c98c6a5a,register paper_family_fallback; check,sql/raw_paper_family_fallback.sql,,433978,,0.0001
+2026-11-06,cad4df77-e201-4ea7-bcd9-f8c2dafbe685,panel volume (totals only),sql/panel_volume.sql,,4816216040,,0.024
+2026-11-06,119d4f04-fcc6-49fb-8dd2-cc123c6d04f0,funnel by field and career age,(inline),,43924002,,0.0002
