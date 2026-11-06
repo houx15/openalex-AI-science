@@ -223,6 +223,53 @@ Effect:
 - A further 6,171 links attach extra versions to families that were already published.
 - **Residual:** dividing by recall puts the true number of unlinked published versions at about 63k. That leaves about 20k (≈11% of the originally "unpublished") still missed. In the outcome window these would be counted as new output. SPEC's robustness check that adds exposure papers back covers this direction. A further option is to drop all 2025–26 works sharing an author ID with the author's own exposure paper and having title Jaccard ≥ 0.5 [to decide at the Phase 0 gate].
 
+## 8. Citation window, 2026H1 completeness and date heaping (SPEC §10 task 10)
+
+Aggregate counts of works by publication month and year. No signal data. Queries `4933b033` and `97a9e0ca`.
+
+**Last complete month: September 2026.**
+- Eligible works per month in Jan–Sep 2026 match 2025 levels: 450k–1.05M per month, against 410k–1.21M.
+- October 2026 is partial (176k) because the snapshot is dated 2026-10-14.
+- The window rule "citations through September 30 of y+1" therefore works for the 2025 post cohort, and for pre cohorts with their own y+1.
+
+**2026H1 completeness** (provisional): 3.84M eligible works, against 3.74M in 2025H1 (+2.5%). For comparison, 2025H1 grew 7.7% over 2024H1. Slightly slower growth is consistent with a small indexing lag, at most about 5%. This is a pass at the aggregate level. The field-level rule at equal indexing age needs an earlier snapshot, which we do not have, so field ratios are to be added.
+
+**Reference coverage of citing works drops after 2023.** Share of eligible works with any parsed reference:
+
+| Year | All | Physical Sci. | Health Sci. | Life Sci. | Social Sci. | Mean refs |
+|---|---|---|---|---|---|---|
+| 2018 | 60.5% | 73.8% | 63.9% | 70.1% | 39.9% | 19.3 |
+| 2020 | 65.5% | 78.3% | 70.4% | 76.2% | 45.0% | 22.4 |
+| 2022 | 73.7% | 84.9% | 76.9% | 82.9% | 56.0% | 26.2 |
+| 2023 | 72.7% | 85.5% | 74.6% | 82.1% | 54.9% | 25.5 |
+| 2024 | 63.8% | 79.0% | 67.0% | 74.1% | 41.5% | 24.3 |
+| 2025 | 55.8% | 72.3% | 60.8% | 66.6% | 31.1% | 22.3 |
+| 2026 | 52.4% | 67.3% | 56.7% | 62.9% | 29.0% | 19.6 |
+
+- Citations to the post cohort (2025 papers) come from citing works dated 2025–26, of which 52–56% have references. Citations to pre cohorts come from citing works dated 2018–2022, of which 60–74% have references.
+- **Raw citation counts are therefore not comparable pre vs post.** SPEC's primary citation outcome normalizes within field × publication half-year × document class. That removes a coverage drop that is uniform within a cell; it does not remove one that differs across authors within a cell, for example by publisher.
+- **Proposed checks at the gate:**
+  1. a robustness version counting only citing works from sources whose reference coverage is stable across 2018–2026;
+  2. reporting coverage by field and publisher;
+  3. if coverage differences across signal types appear after the Phase 3 gate, treating the citation DiD as descriptive (SPEC §8 already allows this).
+
+**January-1 date heaping.** Share of eligible works dated exactly January 1:
+
+| 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 | 2026 |
+|---|---|---|---|---|---|---|---|---|
+| 20.0% | 18.9% | 18.5% | 15.6% | 13.2% | 12.4% | 11.9% | 11.1% | 11.0% |
+
+The share is highest in social sciences: 26.5% in 2018, 11.5% in 2025. These are year-only dates, and all of them land in H1. Field × period fixed effects absorb a common H1 bump within field. Two things remain:
+- the bump shrinks over time, so pre-period H1 counts are inflated more than post-period ones;
+- authors who publish in venues that give only a year get noisier half-year timing.
+
+**Proposed:**
+- an annual-period robustness version of the count DiD;
+- an H2-only check;
+- sending Jan-1-dated works to the conference/timing robustness check only through their earliest dated source, as SPEC §8 already allows.
+
+**Scan cost of dated citation edges.** Building `referenced_works` → citing publication date needs about 37 GB per build (`referenced_works` 31.6 GB, plus id and date columns), about $0.19.
+
 ## Open items
 
 1. **PI decision (exposure eligibility).** About 0.9% of 2023–24 arXiv papers are versions of papers published years earlier, e.g. a 2017 IEEE article first posted to arXiv in 2024. SPEC §6 defines exposure by v1 date alone, so these would be scored as 2023–24 text. **Proposed:** exclude papers whose family has a formal publication dated before 2022 from exposure scoring. Not applied.

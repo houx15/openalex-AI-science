@@ -44,3 +44,4 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-06,a25d185d-1ec1-4ca4-be27-f443f65da829,CTAS pseudo_author_papers_r20261106a,sql/sim_pseudo_authors.sql,,17839067697,,0.089
 2026-11-06,1ec928f8-18d4-4ec7-849d-7f65984dcf22,pseudo-timeline half-year counts 2012-2020,sql/sim_pseudo_counts.sql,,3238585210,,0.016
 2026-11-06,b6209cea-ce01-458f-b2d3-3e8c0a3c38b0,export pseudo_author_papers,(inline),,10574510,,0.0001
+2026-11-06,4933b033-2a1b-4b2e-8eef-29067d186341 + 97a9e0ca-07c2-4c4e-88bd-86c585b4c813,citation-window audit: monthly counts; refs coverage and Jan-1 by year x domain,(inline),,790127457,,0.004
