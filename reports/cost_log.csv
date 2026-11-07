@@ -48,3 +48,6 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-06,47a7516b-ae5e-4404-8a97-5c6dba0b2343 + 6a7ce715-9ffb-412c-9fe7-e78d00053347 + da55c8e8-9daa-4085-ae80-9165530a3189 + 5f6013d9-dd02-4c72-a6bb-da776059250e,conference/book-chapter classification audit,(inline),,2837078346,,0.014
 2026-11-06,730df16d-51b4-44b4-8e14-b0cfb7022b23,CTAS author_funnel_r20261106b (eligibility v1),sql/ctas_author_funnel.sql,,33505536790,,0.168
 2026-11-06,c09a0bc5-526f-4aea-a7af-cce09c085877,funnel v0 vs v1 comparison,(inline),,54466420,,0.0003
+2026-11-07,c9f7c625-dfa4-42ed-8bd4-08b932c4c856,scoring table: main/subsample/AI-researcher paper counts (eligibility v1),sql/scoring_counts_funnel.sql,,2860251317,,0.014
+2026-11-07,d2a1c436-3457-46af-b06a-df74755997af,scoring table: new entrants and H1 follow-up paper counts,sql/scoring_counts_extra.sql,,71778607444,,0.359
+2026-11-07,806dc985-d2ce-45bb-a0d8-231cf64ebf6c,scoring table: placebo subsample paper counts,(inline),,25864092,,0.0001
