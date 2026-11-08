@@ -51,3 +51,5 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-07,c9f7c625-dfa4-42ed-8bd4-08b932c4c856,scoring table: main/subsample/AI-researcher paper counts (eligibility v1),sql/scoring_counts_funnel.sql,,2860251317,,0.014
 2026-11-07,d2a1c436-3457-46af-b06a-df74755997af,scoring table: new entrants and H1 follow-up paper counts,sql/scoring_counts_extra.sql,,71778607444,,0.359
 2026-11-07,806dc985-d2ce-45bb-a0d8-231cf64ebf6c,scoring table: placebo subsample paper counts,(inline),,25864092,,0.0001
+2026-11-08,d042c5b1-b046-43f3-801c-46814c83d5a4,CTAS pilot_sample_r20261108a (calibration / pilot_main / placebo lists),sql/ctas_pilot_sample.sql,,2394770081,,0.012
+2026-11-08,6937b45d-071b-4687-9040-f4047ab9a816 + 25530c7b-bdb9-4c6f-bec1-b3e9b36ba2b4,pilot sample summary and export,(inline),,4109748,,0.0001
