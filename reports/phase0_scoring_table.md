@@ -75,22 +75,61 @@ Comparison for the main options:
 
 Recommendation, unchanged from `reports/phase0_funnel.md`: per paper (C) for the Phase 1 pilot, because it is v1-exact and avoids any spend before the measures are validated; the hybrid for full scoring. arXiv asks bulk users to use S3, so a 13–23-day per-paper run is the option to avoid.
 
-## 3. GPU compute (blank until the pilot)
+## 3. GPU compute for scoring (measured in the pilot; planning bracket below)
 
-| Model step | Seconds per paper on one A100 | Source |
+What runs per paper, from the `idealens` 0.1.7 documentation (PyPI page, read 2026-11-08):
+- **Parsing** LaTeX or PDF to text: CPU only.
+- **IdeaLens outline extraction:** an LLM writes a structured outline of each paper. The package default is Gemini 3.7 Flash (external, not approved); locally it runs any model behind an OpenAI-compatible endpoint, e.g. vLLM. The prompt carries six worked examples and most of the output is reasoning tokens, so this is the expensive step.
+- **IdeaLens scoring** of the outline and **ProseLens** on the full text: the default (Nemotron) models need one 80 GB GPU each pass (59 GiB of weights). A smaller IdeaLens-Qwen3.5-9B variant (~16 GB) exists. ProseLens makes no LLM calls; it reads the document directly.
+- The package gives no throughput figures. Its only cost figure is hosted IdeaLens scoring on Tinker at about $0.50 per 1,000 documents (external; not approved).
+
+| Step | Seconds per paper on one A100 (measured) | Planning bracket [assumption, not measured] |
 |---|---|---|
-| ProseLens (writing) | — | Phase 1 pilot |
-| IdeaLens outline extraction, local model | — | Phase 1 pilot |
-| IdeaLens scoring | — | Phase 1 pilot |
-| Synthetic-text generation, local LLM | — | Phase 1 pilot |
+| Parsing to text (CPU) | — | 0.2–1 CPU-s |
+| IdeaLens outline extraction, local model | — | 2–10 s |
+| IdeaLens scoring | — | 0.2–1 s |
+| ProseLens | — | 0.5–2 s |
+| Synthetic-text generation, local LLM (~1,600 texts) | — | 10–60 s |
 
-Scale for reading the table once speeds are known: each 1 s per paper costs 27.8 GPU-hours per 100k papers, which is 0.6 days of wall-clock on 2 A100s. Adroit has no cash cost to the project [VERIFY allocation], so the binding limit is queue time: `gpu-long` allows 2 days per job [VERIFY], so jobs must be split and resumable. AWS GPU instances are not in the plan or the IAM allowlist and would count toward the $100 cap.
+The bracket assumes batched vLLM inference, about 15k input tokens per paper (text plus the six-example prompt) and 1–4k output tokens for extraction. It is only for planning; the pilot replaces it.
 
-## 4. Decisions for the PI
+What the bracket implies for **pilot + main, all authors** (≈375k papers including synthetic tests):
 
-1. **Main scoring size:** all 293,950 authors (273,645 papers) or a random 100k (137,450 papers).
-2. **Which extra lines to keep:** monthly first detection / rolling exposure (+78,930), AI researchers (+27,613), new entrants (+45,598, or capped), H1 follow-up (≤126,603, plus the 2025–26 bulk window).
-3. **Placebo size:** 30k authors (47,168 papers) proposed; 50k (71,047) or all (150,049) possible.
-4. **Pilot main-sample size:** 2,000 authors (3,709 papers) or 3,300 authors (~6,000 papers, SPEC's target).
-5. **Synthetic-test generation:** local open-weights model, or external LLM (needs approval).
-6. **Access route:** per-paper for the pilot; hybrid bulk + per-paper for full scoring. EC2 launches and tar downloads still need your approval each time.
+| Part | Papers | GPU-hours (bracket) | Adroit wall-clock at 2 A100s, excluding queue waits |
+|---|---|---|---|
+| Phase 1 pilot (calibration, placebo 30k, pilot main, synthetic) | ~105k | 80–380 | 2–8 days |
+| Main scoring, rest of 273,645 | 269,936 | 200–980 | 4–20 days |
+| **Total** | **~375k** | **280–1,360** | **6–28 days** |
+
+- Scale: each 1 s per paper costs 27.8 GPU-hours per 100k papers, 0.6 days of wall-clock on 2 A100s.
+- **GPU time, not download, is the likely binding constraint.** Downloads for this scenario take 5.5 days (hybrid) and run in parallel with scoring.
+- Adroit has no cash cost to the project [VERIFY allocation]. `gpu-long` allows 2 days per job [VERIFY], so jobs must be chunked and resumable. The extractor and the 59 GiB scorers do not fit on one GPU together, so they run as separate passes over saved outlines.
+- If the pilot lands at the high end, the levers are: a smaller local extractor, a shorter-text rule for long papers (SPEC §8 leaves this to the pilot), the 100k-author subsample (halves the main line), or hosted extraction/scoring (needs approval for external use; Tinker scoring alone would be about $190 for 375k papers). AWS GPU instances are not in the IAM allowlist and would count toward the $100 cap.
+- Parsing: 20–100 CPU-hours, on Adroit CPU nodes or on the EC2 extraction instance.
+
+## 4. Analysis after scoring (statistics and data build)
+
+These costs are small next to scoring.
+
+| Step | Where | Cost or time |
+|---|---|---|
+| Author × half-year panel (4.9M rows) and author × work table (15.6M rows) | Athena | ≲$2 |
+| Dated citing works for the panel's works and paper families (citation-window audit, `reports/phase0_data_audit.md` §8) | Athena | ≈37 GB scanned, ≈$0.20; output a few GB |
+| Main PPML with author FE and the proposed control FE, event study | Adroit CPU or Mac | Seconds to a minute per fit on 4.9M rows (additive FE took ~1 s on 30–50k-author samples) |
+| Robustness grid (thresholds, `n_i` strata, author roles, timing, conference-only, baseline alternatives, add-backs), ~200–500 fits | Adroit CPU | A few CPU-hours |
+| Three-way FE re-test in R `fixest` / `ppmlhdfe` (`docs/DEVIATIONS.md`) | Adroit CPU | Hours, once |
+| Citation models (V1 within-author paper model, ~560k author-paper slots), H1 hazard, IPW and bounds | Adroit CPU | Minutes to hours |
+| Randomization inference or bootstrap, if pre-registered (e.g. 1,000 draws) | Adroit CPU | ~10–20 CPU-hours |
+| Storage | Adroit scratch | Text ≤30 GB, outlines a few GB, scores <1 GB |
+
+**AWS projection for this scenario:** spent $3.64; extraction on EC2 ~$10–20; panel and citation build ~$2–5. Total about **$16–29**, well under the $80 stop.
+
+## 5. Decisions for the PI
+
+Decided 2026-11-08: **pilot + main sample with all authors** (`docs/DECISIONS.md`). Still open:
+
+1. **Extra lines:** none selected for now. Monthly first detection / rolling exposure (+78,930), AI researchers (+27,613), new entrants (+45,598, or capped), H1 follow-up (≤126,603, plus the 2025–26 bulk window) can be added after the pilot measures throughput.
+2. **Placebo size:** 30k authors (47,168 papers) proposed; 50k (71,047) or all (150,049) possible.
+3. **Pilot main-sample size:** 2,000 authors (3,709 papers) or 3,300 authors (~6,000 papers, SPEC's target).
+4. **Synthetic-test generation:** local open-weights model, or external LLM (needs approval).
+5. **Access route:** per-paper for the pilot; hybrid bulk + per-paper for full scoring. EC2 launches and tar downloads still need your approval each time.
