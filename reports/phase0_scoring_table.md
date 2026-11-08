@@ -124,12 +124,6 @@ These costs are small next to scoring.
 
 **AWS projection for this scenario:** spent $3.64; extraction on EC2 ~$10–20; panel and citation build ~$2–5. Total about **$16–29**, well under the $80 stop.
 
-## 5. Decisions for the PI
+## 5. Decisions
 
-Decided 2026-11-08: **pilot + main sample with all authors** (`docs/DECISIONS.md`). Still open:
-
-1. **Extra lines:** none selected for now. Monthly first detection / rolling exposure (+78,930), AI researchers (+27,613), new entrants (+45,598, or capped), H1 follow-up (≤126,603, plus the 2025–26 bulk window) can be added after the pilot measures throughput.
-2. **Placebo size:** 30k authors (47,168 papers) proposed; 50k (71,047) or all (150,049) possible.
-3. **Pilot main-sample size:** 2,000 authors (3,709 papers) or 3,300 authors (~6,000 papers, SPEC's target).
-4. **Synthetic-test generation:** local open-weights model, or external LLM (needs approval).
-5. **Access route:** per-paper for the pilot; hybrid bulk + per-paper for full scoring. EC2 launches and tar downloads still need your approval each time.
+Decided 2026-11-08 (`docs/DECISIONS.md`): pilot + main sample with all authors; pilot of 3,300 main-sample authors (~6,000 papers); score placebo with 30k pseudo-timeline authors; synthetic texts from a local open-weights model; per-paper access for the pilot and hybrid access for full scoring (each EC2 launch and tar download still needs PI approval). Extra-scoring lines are deferred until the pilot measures throughput.

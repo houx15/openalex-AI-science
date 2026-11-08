@@ -131,7 +131,7 @@ Reading:
 Implications to carry into the design (for the Phase 0 gate):
 1. Exposure eligibility (research paper vs review/position/note) must use arXiv-side information applied the same way to all papers, not OpenAlex `type`.
 2. An author's exposure papers come from OpenAlex attribution, which is less complete for unpublished papers, especially without ORCID. Signal types could then be computed from a published-skewed set of papers. Planned checks: ORCID-only robustness (already in SPEC §9), a published-vs-unpublished split of signal prevalence at the Phase 1 pilot, and an estimate of how many unpublished papers by sampled authors are missing from their profiles (name + coauthor matching on a sample).
-3. The proposed pre-2022 exposure exclusion conditions on publication. Treat it as a robustness check, not the main rule, unless the PI prefers otherwise.
+3. The proposed pre-2022 exposure exclusion conditions on publication. Treat it as a robustness check, not the main rule, unless the PI prefers otherwise. **Gate decision (2026-11-08):** excluded in the main analysis, because the earlier publication date is pre-treatment; inclusion is the robustness check (`docs/DECISIONS.md`).
 
 ## 5. Author bridge: are unpublished arXiv papers attributed to the right author profile?
 
@@ -304,8 +304,8 @@ Almost all of the change is in Physical Sciences (+3,475 m = 1 authors). v1 matt
 
 ## Open items
 
-1. **PI decision (exposure eligibility).** About 0.9% of 2023–24 arXiv papers are versions of papers published years earlier, e.g. a 2017 IEEE article first posted to arXiv in 2024. SPEC §6 defines exposure by v1 date alone, so these would be scored as 2023–24 text. **Proposed:** exclude papers whose family has a formal publication dated before 2022 from exposure scoring. Not applied.
-2. **Unlinked published versions.** The fallback is built (§7) with precision ≈97% and recall ≈65%. Still to do: decide the residual rule at the gate, extend the fallback to pseudo-timeline v1 years (2017–2018), and re-run the §4 comparisons with fallback-augmented families.
+1. **PI decision (exposure eligibility).** About 0.9% of 2023–24 arXiv papers are versions of papers published years earlier, e.g. a 2017 IEEE article first posted to arXiv in 2024. SPEC §6 defines exposure by v1 date alone, so these would be scored as 2023–24 text. **Decided at the gate (2026-11-08):** exclude papers whose family has a formal publication dated before 2022 from exposure scoring in the main analysis; include them as a robustness check.
+2. **Unlinked published versions.** The fallback is built (§7) with precision ≈97% and recall ≈65%. Residual rule decided at the gate (two robustness checks, `docs/DECISIONS.md`). Still to do: extend the fallback to pseudo-timeline v1 years (2017–2018), and re-run the §4 comparisons with fallback-augmented families.
 3. Resolve the 93 duplicate arXiv IDs and the ~1,500 works linked to several arXiv papers.
 4. Sample check of v1 dates against OAI-PMH once the endpoint works.
 5. Remaining audit sections: conference and book-chapter classification, preprint handling, 2026H1 completeness, author-ID quality, indexing delay, `has_content` coverage.
