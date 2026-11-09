@@ -238,6 +238,15 @@ The same queries and accept rules, shifted by −6 years (v1 2017–18, candidat
 - Precision, from a review of fixed-seed samples (seed 20261109): Levenshtein ≥ 0.9 about 22/25 correct (misses: a same-group paper on a different molecule, two follow-up papers with near-identical titles); the Jaccard rule about 25/30 (misses are companion papers or highlights versions). With exact titles counted as correct, weighted precision is about 96%, above the 0.95 target. It is slightly lower than for 2023–24, as older authors have had longer to write companion papers.
 - Effect on the pilot placebo list: none. The pre-2016 published exclusion only concerns works dated before 2016, which this fallback never adds (its candidates are dated 2016 or later), as for the main sample's pre-2022 rule. The links matter for placebo *outcomes*: they keep published versions of 2017–18 exposure papers out of the pseudo outcome window.
 
+### 7c. Duplicate arXiv IDs and works linked to several arXiv papers (2026-11-09)
+
+Query `sql/audit_duplicates.sql` (qid e7edd689, 11.0 GB).
+
+- **Duplicate arXiv IDs:** the "93 IDs appearing twice" are 93 extra rows on 81 IDs (71 twice, 8 three times, 2 four times). All are old-style IDs with v1 in 1998–2007, with identical titles and v1 dates; some copies differ only in the version count. None is in any analysis window or pilot list. Rule: keep one row per ID, the one with the most versions. No effect on any sample.
+- **Works linked to 2+ arXiv papers** (non-xpac, not arXiv-primary, v1 2017+): 1,386 works, 1,337 of them with two papers. 77% are articles, 16% conference papers; 46 are books, i.e. proceedings volumes or edited books legitimately holding several papers. Spot checks show three cases: companion papers merged into one journal article (e.g. two 2018 MiniBooNE papers), an article that later absorbed an older preprint, and series/proceedings volumes.
+- **In the pilot lists:** 169 works touch pilot papers (82 calibration, 79 placebo, 5 pilot_main, 3 both placebo and calibration). Calibration does not use publication status, and 5 pilot_main papers are negligible, so the pilot lists stay as they are.
+- **Rule [PROPOSED, applied when the analysis families are built in Phase 2]:** a work linked to several arXiv papers counts as the published version of each of them for the outcome exclusion (conservative: it never becomes a "new" output for those authors), but it counts toward "published" status only for the arXiv paper with the closest title (the Levenshtein and Jaccard measures of §7); books and proceedings volumes never set "published" status.
+
 ## 8. Citation window, 2026H1 completeness and date heaping (SPEC §10 task 10)
 
 Aggregate counts of works by publication month and year. No signal data. Queries `4933b033` and `97a9e0ca`.
@@ -321,6 +330,6 @@ Almost all of the change is in Physical Sciences (+3,475 m = 1 authors). v1 matt
 
 1. **PI decision (exposure eligibility).** About 0.9% of 2023–24 arXiv papers are versions of papers published years earlier, e.g. a 2017 IEEE article first posted to arXiv in 2024. SPEC §6 defines exposure by v1 date alone, so these would be scored as 2023–24 text. **Decided at the gate (2026-11-08):** exclude papers whose family has a formal publication dated before 2022 from exposure scoring in the main analysis; include them as a robustness check.
 2. **Unlinked published versions.** The fallback is built (§7) with precision ≈97% and recall ≈65%. Residual rule decided at the gate (two robustness checks, `docs/DECISIONS.md`). Fallback extended to pseudo-timeline v1 years 2017–18 (§7b, 2026-11-09). Still to do: re-run the §4 comparisons with fallback-augmented families.
-3. Resolve the 93 duplicate arXiv IDs and the ~1,500 works linked to several arXiv papers.
+3. ~~Resolve the 93 duplicate arXiv IDs and the ~1,500 works linked to several arXiv papers.~~ Done (§7c): duplicate IDs are 1998–2007 only; rule proposed for the 1,386 multi-linked works.
 4. Sample check of v1 dates against OAI-PMH once the endpoint works.
 5. Remaining audit sections: conference and book-chapter classification, preprint handling, 2026H1 completeness, author-ID quality, indexing delay, `has_content` coverage.

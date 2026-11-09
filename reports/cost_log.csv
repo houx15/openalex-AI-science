@@ -57,3 +57,4 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-09,39953b88-daad-4edd-bffa-c556d1d55884,fallback candidates 2017-18 v1: exact titles,sql/fallback_candidates_exact_title_2017_18.sql,,17828884836,,0.089
 2026-11-09,961acbe3-47f9-42cd-8469-1c21465e0125,works 2016+ already linked to arXiv,sql/fallback_linked_works_2016plus.sql,,35308467,,0.0002
 2026-11-09,a81719c4-ebd0-4eb7-b68d-fc64298f5be2 + 254c1882-c793-4b14-b24b-6fb23e3f33c1,register paper_family_fallback_2017_18; counts,sql/raw_paper_family_fallback_2017_18.sql,,41101518,,0.0002
+2026-11-09,e7edd689-3b52-472e-ad9d-d2566cd795f7,duplicate arXiv IDs and multi-linked works,sql/audit_duplicates.sql,,11000005309,,0.055
