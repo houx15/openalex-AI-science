@@ -35,3 +35,5 @@ Files (gitignored, also on Adroit at `/scratch/network/yh6580/ai_division_of_lab
 - Built in tmux session `ilsetup` on della9 (login nodes have internet; compute nodes use the cached weights). Log: `logs/setup_env.log`.
 - Models: IdeaLens, IdeaLens-NoParaphrase, ProseLens (one 80 GB GPU each), IdeaLens-ModernBERT-L and ProseLens-ModernBERT-L (small-GPU/CPU fallback).
 - Fetch progress at 13:45: 29,865 of 103,248 attempts logged, 791 MB kept.
+- Setup finished 2026-11-09: 191 GB weights + 8.3 GB env (≈199 GB). Versions: idealens 0.1.7, vllm 0.21.0, torch 2.11.0+cu130, transformers 5.22.2.
+- Smoke test (login node, CPU, offline `HF_HUB_OFFLINE=1`): ProseLens-ModernBERT-L on 3 parsed pilot papers (first 20k characters, ~4.5k tokens each) ran end to end with the repo thresholds; ~36 s per paper on CPU, so even the small detectors need a GPU at scale. The 80 GB models are untested until a GPU job runs.
