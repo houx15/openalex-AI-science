@@ -28,3 +28,10 @@ Files (gitignored, also on Adroit at `/scratch/network/yh6580/ai_division_of_lab
 - Output: `/scratch/network/yh6580/ai_division_of_labor/text/arxiv_v1_pilot/`, with `manifest.jsonl` (one record per attempt) and `fetch.log`. Only LaTeX text members (`.tex/.ltx/.bbl`) are kept, or PDF-extracted text for PDF-only submissions. Expected size is 2–3 GB (11–39 KB per paper in the first records).
 - Environment: `/scratch/network/yh6580/ai_division_of_labor/envs/fetch` (Python 3.12.7 from anaconda3/2024.10, requests 2.32.3, PyMuPDF 1.24.10). Adroit scratch had ~64 GB free at the start.
 - To check: `ssh adroit5.princeton.edu` (the `adroit` alias may land on another login node), then `tmux attach -t arxivfetch`, or `tail` the log; the manifest is on shared scratch and readable from any node. Rerunning the same command resumes from the manifest.
+
+## Della scoring setup (2026-11-09)
+
+- PI approved ~200 GB on Della scratch. Root: `/scratch/gpfs/YUXIE/members/yh6580/ai_division_of_labor/` (`envs/idealens`, Python 3.12, `idealens[vllm,hf,openai]==0.1.7`, lock in `envs/idealens.lock`; `HF_HOME=hf/`).
+- Built in tmux session `ilsetup` on della9 (login nodes have internet; compute nodes use the cached weights). Log: `logs/setup_env.log`.
+- Models: IdeaLens, IdeaLens-NoParaphrase, ProseLens (one 80 GB GPU each), IdeaLens-ModernBERT-L and ProseLens-ModernBERT-L (small-GPU/CPU fallback).
+- Fetch progress at 13:45: 29,865 of 103,248 attempts logged, 791 MB kept.
