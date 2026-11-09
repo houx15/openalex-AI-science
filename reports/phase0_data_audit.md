@@ -128,6 +128,28 @@ Reading:
 - In other fields a gap remains even with ORCID. Large physics collaborations, which are mostly published and mostly established authors, likely contribute. Repeat with the ≤50-author scoring rule before drawing conclusions.
 - ~~4.7% of unpublished 2023–24 papers have no authors in OpenAlex.~~ **Corrected (§5):** this was an artifact of the first `authorship_long`, which dropped xpac works. 4,784 unpublished papers (2.6%, against 0 published) exist in OpenAlex only as xpac records. `authorship_long` is now rebuilt with xpac rows flagged.
 
+**Rerun with fallback-augmented families and the ≤50-author rule (2026-11-09).** Query `sql/audit_selection_publication.sql` (qid 2458e076, 4.2 GB); counts in `data/derived/audit/selection_publication_rerun.csv`. Unit: distinct (paper, author) pairs. "Before" uses ID/DOI links only and reproduces the table above exactly; "after" also counts title + author fallback links (§7) as published.
+
+| Teams | Field group | ORCID? | Gap before | Gap after |
+|---|---|---|---|---|
+| all | cs/math/stat/eess | all | −3.9 | −5.2 |
+| all | cs/math/stat/eess | yes | +0.8 | +0.3 |
+| all | cs/math/stat/eess | no | −0.7 | −1.9 |
+| all | other | all | −8.1 | −10.3 |
+| all | other | yes | −5.3 | −6.6 |
+| all | other | no | −14.5 | −15.5 |
+| ≤50 authors | cs/math/stat/eess | yes | +0.9 | +0.3 |
+| ≤50 authors | cs/math/stat/eess | no | −0.7 | −1.9 |
+| ≤50 authors | other | all | −2.8 | −5.8 |
+| ≤50 authors | other | yes | +0.8 | −0.9 |
+| ≤50 authors | other | no | −6.6 | −7.2 |
+
+(Gap = established share, unpublished minus published, in percentage points.)
+
+- As expected, moving falsely "unpublished" papers to published widens the gaps by 1–3 points. No direction changes.
+- **With the ≤50-author scoring rule, the gap within ORCID strata is under 1 point in both field groups.** The −5 to −7 points seen in other fields came from large collaborations, which are excluded from scoring.
+- The remaining gap is among non-ORCID authorships (−2 points in cs/math, −7 elsewhere), and unpublished papers have more of them (20.5% vs 10.4% of pairs). This supports making ORCID-only results a central robustness check (SPEC §9), as already planned.
+
 Implications to carry into the design (for the Phase 0 gate):
 1. Exposure eligibility (research paper vs review/position/note) must use arXiv-side information applied the same way to all papers, not OpenAlex `type`.
 2. An author's exposure papers come from OpenAlex attribution, which is less complete for unpublished papers, especially without ORCID. Signal types could then be computed from a published-skewed set of papers. Planned checks: ORCID-only robustness (already in SPEC §9), a published-vs-unpublished split of signal prevalence at the Phase 1 pilot, and an estimate of how many unpublished papers by sampled authors are missing from their profiles (name + coauthor matching on a sample).
@@ -329,7 +351,7 @@ Almost all of the change is in Physical Sciences (+3,475 m = 1 authors). v1 matt
 ## Open items
 
 1. **PI decision (exposure eligibility).** About 0.9% of 2023–24 arXiv papers are versions of papers published years earlier, e.g. a 2017 IEEE article first posted to arXiv in 2024. SPEC §6 defines exposure by v1 date alone, so these would be scored as 2023–24 text. **Decided at the gate (2026-11-08):** exclude papers whose family has a formal publication dated before 2022 from exposure scoring in the main analysis; include them as a robustness check.
-2. **Unlinked published versions.** The fallback is built (§7) with precision ≈97% and recall ≈65%. Residual rule decided at the gate (two robustness checks, `docs/DECISIONS.md`). Fallback extended to pseudo-timeline v1 years 2017–18 (§7b, 2026-11-09). Still to do: re-run the §4 comparisons with fallback-augmented families.
+2. **Unlinked published versions.** The fallback is built (§7) with precision ≈97% and recall ≈65%. Residual rule decided at the gate (two robustness checks, `docs/DECISIONS.md`). Fallback extended to pseudo-timeline v1 years 2017–18 (§7b, 2026-11-09). §4 comparisons re-run with fallback-augmented families (2026-11-09): no direction changes; within ORCID strata the gap is under 1 point for ≤50-author papers.
 3. ~~Resolve the 93 duplicate arXiv IDs and the ~1,500 works linked to several arXiv papers.~~ Done (§7c): duplicate IDs are 1998–2007 only; rule proposed for the 1,386 multi-linked works.
 4. Sample check of v1 dates against OAI-PMH once the endpoint works.
 5. Remaining audit sections: conference and book-chapter classification, preprint handling, 2026H1 completeness, author-ID quality, indexing delay, `has_content` coverage.
