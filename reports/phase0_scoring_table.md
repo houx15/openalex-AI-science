@@ -93,6 +93,8 @@ What runs per paper, from the `idealens` 0.1.7 documentation (PyPI page, read 20
 
 The bracket assumes batched vLLM inference, about 15k input tokens per paper (text plus the six-example prompt) and 1–4k output tokens for extraction. It is only for planning; the pilot replaces it.
 
+**Update 2026-11-09, token counts from `idealens run --dry-run`** on 50 parsed pilot papers (format fixed to Academic Writing, so no classification call; counts are the package's Gemini measurements used as a proxy): **61k input tokens and 7.0k output tokens per paper** for extraction. Most input is the shared six-example prompt, which vLLM prefix caching computes once, but the 7k output tokens are generated per paper and the long context limits batch size. That makes the low end of the 2–10 s extraction bracket unlikely; **5–15 s per paper** for a 9B-class local extractor on one A100 is the better planning figure. The total for pilot + main then becomes about **600–1,900 GPU-hours (12–40 days on 2 A100s)**. Levers: a smaller or faster extractor, fewer worked examples (changes outlines, but local calibration is needed anyway), or the ModernBERT detector variants for scoring, which run on any GPU.
+
 What the bracket implies for **pilot + main, all authors** (≈375k papers including synthetic tests):
 
 | Part | Papers | GPU-hours (bracket) | Adroit wall-clock at 2 A100s, excluding queue waits |
