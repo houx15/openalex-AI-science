@@ -223,6 +223,21 @@ Effect:
 - A further 6,171 links attach extra versions to families that were already published.
 - **Residual:** dividing by recall puts the true number of unlinked published versions at about 63k. That leaves about 20k (≈11% of the originally "unpublished") still missed. In the outcome window these would be counted as new output. SPEC's robustness check that adds exposure papers back covers this direction. A further option is to drop all 2025–26 works sharing an author ID with the author's own exposure paper and having title Jaccard ≥ 0.5 [to decide at the Phase 0 gate].
 
+### 7b. Pseudo-timeline extension (arXiv v1 2017–2018), added 2026-11-09
+
+The same queries and accept rules, shifted by −6 years (v1 2017–18, candidate works published 2016–2020): `sql/fallback_candidates_author_block_2017_18.sql`, `sql/fallback_candidates_exact_title_2017_18.sql`, `sql/fallback_linked_works_2016plus.sql`. Output: Athena table `paper_family_fallback_2017_18_r20261109a` (sha256 of `links.parquet` 218c923b…). Placebo families = `paper_family_r20261106b` ∪ these links.
+
+| Method | Links | arXiv papers |
+|---|---|---|
+| `title_exact_id` | 21,079 | 19,815 |
+| `title_exact_name` | 423 | 408 |
+| `title_fuzzy_id` | 9,683 | 9,423 |
+| Total (deduplicated) | 31,185 | 29,428 |
+
+- 17,505 of the 80,554 "unpublished" 2017–18 families (21.7%) gain a published version, close to the 23.1% for 2023–24, so the placebo and the main analysis get the same treatment.
+- Precision, from a review of fixed-seed samples (seed 20261109): Levenshtein ≥ 0.9 about 22/25 correct (misses: a same-group paper on a different molecule, two follow-up papers with near-identical titles); the Jaccard rule about 25/30 (misses are companion papers or highlights versions). With exact titles counted as correct, weighted precision is about 96%, above the 0.95 target. It is slightly lower than for 2023–24, as older authors have had longer to write companion papers.
+- Effect on the pilot placebo list: none. The pre-2016 published exclusion only concerns works dated before 2016, which this fallback never adds (its candidates are dated 2016 or later), as for the main sample's pre-2022 rule. The links matter for placebo *outcomes*: they keep published versions of 2017–18 exposure papers out of the pseudo outcome window.
+
 ## 8. Citation window, 2026H1 completeness and date heaping (SPEC §10 task 10)
 
 Aggregate counts of works by publication month and year. No signal data. Queries `4933b033` and `97a9e0ca`.
@@ -305,7 +320,7 @@ Almost all of the change is in Physical Sciences (+3,475 m = 1 authors). v1 matt
 ## Open items
 
 1. **PI decision (exposure eligibility).** About 0.9% of 2023–24 arXiv papers are versions of papers published years earlier, e.g. a 2017 IEEE article first posted to arXiv in 2024. SPEC §6 defines exposure by v1 date alone, so these would be scored as 2023–24 text. **Decided at the gate (2026-11-08):** exclude papers whose family has a formal publication dated before 2022 from exposure scoring in the main analysis; include them as a robustness check.
-2. **Unlinked published versions.** The fallback is built (§7) with precision ≈97% and recall ≈65%. Residual rule decided at the gate (two robustness checks, `docs/DECISIONS.md`). Still to do: extend the fallback to pseudo-timeline v1 years (2017–2018), and re-run the §4 comparisons with fallback-augmented families.
+2. **Unlinked published versions.** The fallback is built (§7) with precision ≈97% and recall ≈65%. Residual rule decided at the gate (two robustness checks, `docs/DECISIONS.md`). Fallback extended to pseudo-timeline v1 years 2017–18 (§7b, 2026-11-09). Still to do: re-run the §4 comparisons with fallback-augmented families.
 3. Resolve the 93 duplicate arXiv IDs and the ~1,500 works linked to several arXiv papers.
 4. Sample check of v1 dates against OAI-PMH once the endpoint works.
 5. Remaining audit sections: conference and book-chapter classification, preprint handling, 2026H1 completeness, author-ID quality, indexing delay, `has_content` coverage.

@@ -53,3 +53,7 @@ date,query_execution_id,purpose,sql_file,est_scan_bytes,actual_scan_bytes,est_co
 2026-11-07,806dc985-d2ce-45bb-a0d8-231cf64ebf6c,scoring table: placebo subsample paper counts,(inline),,25864092,,0.0001
 2026-11-08,d042c5b1-b046-43f3-801c-46814c83d5a4,CTAS pilot_sample_r20261108a (calibration / pilot_main / placebo lists),sql/ctas_pilot_sample.sql,,2394770081,,0.012
 2026-11-08,6937b45d-071b-4687-9040-f4047ab9a816 + 25530c7b-bdb9-4c6f-bec1-b3e9b36ba2b4,pilot sample summary and export,(inline),,4109748,,0.0001
+2026-11-09,8ecfc8b4-2677-4e59-a8bb-b0ae2042027a,fallback candidates 2017-18 v1: author-ID blocked,sql/fallback_candidates_author_block_2017_18.sql,,8857658156,,0.044
+2026-11-09,39953b88-daad-4edd-bffa-c556d1d55884,fallback candidates 2017-18 v1: exact titles,sql/fallback_candidates_exact_title_2017_18.sql,,17828884836,,0.089
+2026-11-09,961acbe3-47f9-42cd-8469-1c21465e0125,works 2016+ already linked to arXiv,sql/fallback_linked_works_2016plus.sql,,35308467,,0.0002
+2026-11-09,a81719c4-ebd0-4eb7-b68d-fc64298f5be2 + 254c1882-c793-4b14-b24b-6fb23e3f33c1,register paper_family_fallback_2017_18; counts,sql/raw_paper_family_fallback_2017_18.sql,,41101518,,0.0002
