@@ -348,6 +348,32 @@ Works from 2018–2021, non-xpac. Queries `47a7516b`, `6a7ce715`, `da55c8e8`, `5
 
 Almost all of the change is in Physical Sciences (+3,475 m = 1 authors). v1 matters more for **outcome counts** of CS and engineering authors than for who enters the sample. The power and false-positive simulations use v0 inputs; the difference is too small to change their conclusions.
 
+## 10. Review/survey title rule: hand validation (2026-11-10)
+
+Code: `src/data/title_rule.py` (tests in `tests/test_title_rule.py`). Population: all 452,913 arXiv papers with v1 in 2023–24, Kaggle snapshot titles and abstracts. Samples are fixed-seed and were reviewed by the agent (title plus the start of the abstract), with samples in `data/derived/audit/title_regex/`. The PI may want to re-check a subset.
+
+**Phase 0 rule** (any review-type word anywhere in the title; excludes 9,618 papers, 2.1%):
+- Of 100 excluded titles, **27 are research papers** (4 more are unclear). The main causes are astronomy data papers named after their survey ("The MAGPI Survey: …", "AGN in the CALIFA survey"), "a causal perspective" / "from the perspective of", and papers *about* systematic reviews.
+- The errors are field-skewed: it excludes 4.7% of astro-ph papers, against 1.0% under the revised rule.
+- **Misses:** in 200 random non-excluded papers, about 2 are reviews (≈1%), with titles like "X: Potential Applications and Future Challenges".
+
+**Revised title rule [PROPOSED]:** review-type words count only where a title announces a review:
+- at the start ("A survey of/on", "Review of", "Overview of…");
+- after a colon, comma or dash (": A Comprehensive Survey");
+- "A perspective on" and "Perspective:";
+- lecture notes, errata, comments and replies, position papers and book reviews.
+
+It excludes 6,050 papers (1.3%).
+- On the tuning sample it drops 1 of 27 research papers wrongly excluded by the old rule, and still catches 67 of 69 reviews.
+- **Fresh sample** (new seed, before two final tweaks):
+  - 38 of 40 titles it excludes are reviews or comments;
+  - of 40 titles the old rule excludes and the new one keeps, 2 were reviews; the tweaks now catch both.
+- Expected net effect: about 3,500 research papers return to eligibility (≈0.8% of papers, more in astro-ph and cs).
+
+**Abstract rule [PROPOSED as robustness, not main]:** the abstract says "this review/survey/tutorial", "these (lecture) notes", "review article" or "survey paper". It adds 1,840 papers beyond the title rule. Of 40 reviewed, about 26–29 are reviews, introductions or lecture notes (≈70%); the rest are research papers using a questionnaire "survey" or "notes" loosely. That is too imprecise for the main rule, but useful as a robustness exclusion.
+
+**Consequences if adopted:** the Phase 0 eligibility tables (`author_funnel_r20261106b`) and the pilot sample lists were built with the old rule. For the main run the funnel would be rebuilt with the revised rule, ported to Athena SQL and checked to give identical flags. The pilot can stay as it is: it is for measuring throughput and calibration, and the difference is under 1% of papers.
+
 ## Open items
 
 1. **PI decision (exposure eligibility).** About 0.9% of 2023–24 arXiv papers are versions of papers published years earlier, e.g. a 2017 IEEE article first posted to arXiv in 2024. SPEC §6 defines exposure by v1 date alone, so these would be scored as 2023–24 text. **Decided at the gate (2026-11-08):** exclude papers whose family has a formal publication dated before 2022 from exposure scoring in the main analysis; include them as a robustness check.
