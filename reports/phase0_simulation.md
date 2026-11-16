@@ -49,6 +49,21 @@ Minimum detectable effect, 80% power, two-sided 5%, as a percent change in outpu
 
 **Reading.** On sampling noise alone, the full sample detects effects of about 1–3% for W vs N and 2–6% for WI vs W. MDE scales roughly with 1/√authors. A random **100k-author subsample** still detects about 3% (W vs N) and 5–6% (WI vs W) at mid prevalence, and needs about half the scoring: 137,450 papers instead of 273,645 under eligibility v1. Fewer papers are shared between sampled authors, so the saving is smaller than the author share (`reports/phase0_scoring_table.md`). Below 30k authors, WI vs W becomes weak at low prevalence. These MDEs are **far smaller than the confounding biases in §2**, so sample size is not the binding constraint. Identification is.
 
+## 1b. Three-way period fixed effects in R fixest (2026-11-16)
+
+The simulations above use additive period effects because pyfixest 0.60.0 did not converge with SPEC §9's field × career bin × half-year interaction (`docs/DEVIATIONS.md`). Re-test: `src/analysis/fe_threeway_check.R`, R 4.6.0 with fixest 0.14.2 on Adroit (8 CPUs). It uses the same panel inputs and mid scenario, with random types (true effect zero), 2 draws per size, and both specifications fitted to the same draw. Output: `data/derived/sim/fe_threeway_check.csv`.
+
+| Authors | Spec | Period FE cells | Converged (GLM iter.) | Seconds | SE of W (draw 1 / 2) | SE of WI−W (draw 1 / 2) |
+|---|---|---|---|---|---|---|
+| 30,000 | additive | 116 + 36 | yes (6) | 1.5–1.7 | 0.0178 / 0.0170 | 0.0388 / 0.0307 |
+| 30,000 | three-way | 435 | yes (6) | 1.1 | 0.0176 / 0.0171 | 0.0390 / 0.0306 |
+| 100,000 | additive | 189 + 36 | yes (6) | 7.1–7.5 | 0.0094 / 0.0099 | 0.0180 / 0.0194 |
+| 100,000 | three-way | 744 | yes (6) | 5.6 | 0.0094 / 0.0098 | 0.0180 / 0.0196 |
+| 290,330 | additive | 216 + 36 | yes (6) | 21 | 0.00568 / 0.00573 | 0.0115 / 0.0110 |
+| 290,330 | three-way | 859 | yes (6) | 18 | 0.00568 / 0.00572 | 0.0114 / 0.0110 |
+
+(Exposure bin × half adds 45 cells to both specifications.) The three-way version converges at every size. Its standard errors differ from the additive version's by less than 1% (MDE W vs N 1.6%, WI vs W 3.2% at full size, unchanged). Point estimates move by under 0.001. fixest's additive SEs also match pyfixest's from §1 (0.0057 at full size, mid scenario), which cross-checks the two implementations. **Conclusion:** the non-convergence was a pyfixest problem. The main analysis can use SPEC's three-way effects as written, estimated with fixest. Nothing above changes.
+
 ## 2. False positives on the −6-year pseudo-timeline (task 9)
 
 Pre = 2012H1–2016H2, pseudo exposure = arXiv v1 in 2017–18 (left out of the fixed-window model), post = 2019H1–2020H1. The pseudo-outcome excludes families with v1 in 2017–18. AI has **no** effect by construction.
