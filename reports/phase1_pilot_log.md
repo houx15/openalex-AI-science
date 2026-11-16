@@ -37,3 +37,8 @@ Files (gitignored, also on Adroit at `/scratch/network/yh6580/ai_division_of_lab
 - Fetch progress at 13:45: 29,865 of 103,248 attempts logged, 791 MB kept.
 - Setup finished 2026-11-09: 191 GB weights + 8.3 GB env (≈199 GB). Versions: idealens 0.1.7, vllm 0.21.0, torch 2.11.0+cu130, transformers 5.22.2.
 - Smoke test (login node, CPU, offline `HF_HUB_OFFLINE=1`): ProseLens-ModernBERT-L on 3 parsed pilot papers (first 20k characters, ~4.5k tokens each) ran end to end with the repo thresholds; ~36 s per paper on CPU, so even the small detectors need a GPU at scale. The 80 GB models are untested until a GPU job runs.
+
+## arXiv v1 fetch complete (2026-11-16)
+
+- All 103,248 pilot IDs attempted (last first-pass request 2026-11-12). After one retry pass, text is available for **103,221 (99.97%)**: 89,612 LaTeX and 13,611 PDF-only. Failures: 24 permanent 404s and 1 response in an unrecognized format (`1906.00760`). Size on Adroit: 2.7 GB.
+- Test parse (`src/text/latex_to_text.py`, shard 0/200 = 517 papers, 1 CPU): 77 s, 58 MB RAM, no errors. Methods: 427 pylatexenc, 19 paragraph-wise fallback, 71 PDF. Median 4,845 words (5th percentile 1,929; 5 papers under 500 words). References found in 488/517. Output is 5.5 MB per shard, so ~1.1 GB and ~4.3 CPU-hours for all papers.
