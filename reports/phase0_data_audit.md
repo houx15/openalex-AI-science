@@ -26,7 +26,8 @@ Status: **in progress**. Sections are added as each check finishes.
 - **452,913 papers have v1 in 2023–2024 (UTC).** By primary archive: cs 185,218 (41%), math 76,085, cond-mat 33,383, astro-ph 31,612, physics 29,623, eess 20,750, quant-ph 18,597, stat 10,985, hep-ph 10,299, other 46k.
 - The share of papers listing the DOI of their published version falls by v1 year: 47.7% (2018) → 38.4% (2022) → 23.7% (2024) → 8.0% (2026).
 - 3.5% of new-style IDs carry a YYMM that differs from the v1 month (month-boundary submissions). Windows use the v1 date, not the ID.
-- The official OAI-PMH endpoint timed out or returned 503 for every historical datestamp on 2026-11-06 (see `docs/DECISIONS.md`). A random-sample check of v1 dates against OAI-PMH is pending.
+- The official OAI-PMH endpoint timed out or returned 503 for every historical datestamp on 2026-11-06 (see `docs/DECISIONS.md`).
+- **v1 dates checked against OAI-PMH (2026-11-16)** with `src/data/audit_v1_dates_oai.py` (GetRecord, `arXivRaw`, seed 20261116). The sample has 330 papers: 150 with v1 in 2023–24, 75 in 2017–18, 75 in 2019–22, and 30 within two days of a year boundary (31 Dec–2 Jan). All 330 records were returned. **All 330 Kaggle v1 timestamps match arXiv's to the second, and all 330 version counts match.** Window assignment by Kaggle v1 date is therefore reliable, including at year boundaries. Output: `data/derived/audit/v1_dates/oai_compare.csv`.
 
 ## 3. arXiv → OpenAlex crosswalk (`paper_family`)
 
@@ -379,5 +380,5 @@ It excludes 6,050 papers (1.3%).
 1. **PI decision (exposure eligibility).** About 0.9% of 2023–24 arXiv papers are versions of papers published years earlier, e.g. a 2017 IEEE article first posted to arXiv in 2024. SPEC §6 defines exposure by v1 date alone, so these would be scored as 2023–24 text. **Decided at the gate (2026-11-08):** exclude papers whose family has a formal publication dated before 2022 from exposure scoring in the main analysis; include them as a robustness check.
 2. **Unlinked published versions.** The fallback is built (§7) with precision ≈97% and recall ≈65%. Residual rule decided at the gate (two robustness checks, `docs/DECISIONS.md`). Fallback extended to pseudo-timeline v1 years 2017–18 (§7b, 2026-11-09). §4 comparisons re-run with fallback-augmented families (2026-11-09): no direction changes; within ORCID strata the gap is under 1 point for ≤50-author papers.
 3. ~~Resolve the 93 duplicate arXiv IDs and the ~1,500 works linked to several arXiv papers.~~ Done (§7c): duplicate IDs are 1998–2007 only; rule proposed for the 1,386 multi-linked works.
-4. Sample check of v1 dates against OAI-PMH once the endpoint works.
+4. ~~Sample check of v1 dates against OAI-PMH.~~ Done 2026-11-16: 330/330 exact matches (§2).
 5. Remaining audit sections: conference and book-chapter classification, preprint handling, 2026H1 completeness, author-ID quality, indexing delay, `has_content` coverage.
